@@ -30,9 +30,15 @@ void pimoroni_left_init(void) {
 
     // Initialize I2C and Pimoroni trackball
     i2c_init();
+
+    // Initialize Pimoroni trackball with error handling
     pimoroni_trackball_device_init();
 
-    // Set initial RGBW color (subtle white for left half)
+    // Set initial RGBW color (bright red for initialization feedback)
+    pimoroni_trackball_set_rgbw(255, 0, 0, 0);
+    wait_ms(500);  // Wait 500ms to show red
+
+    // Change to subtle white to indicate successful init
     pimoroni_trackball_set_rgbw(20, 20, 20, 10);
 
     pimoroni_initialized = true;

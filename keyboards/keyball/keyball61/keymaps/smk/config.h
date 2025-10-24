@@ -44,8 +44,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef POINTING_DEVICE_ENABLE
 
 // I2C configuration for Pimoroni trackball (left half)
-#define I2C1_SDA_PIN GP6
-#define I2C1_SCL_PIN GP7
+#define I2C1_SDA_PIN GP2
+#define I2C1_SCL_PIN GP3
 
 // Pimoroni trackball configuration
 #define PIMORONI_TRACKBALL_ADDRESS 0x0A
