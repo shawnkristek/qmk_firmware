@@ -20,6 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "quantum.h"
 
+// Dual trackball support
+#include "lib/keyball/keyball.h"
+
+// Forward declarations for Pimoroni trackball integration
+void pimoroni_left_init(void);
+bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
+void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [0] = LAYOUT_universal(
@@ -88,23 +96,94 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-    // Auto enable scroll mode when the highest layer is 3
-    keyball_set_scroll_mode(get_highest_layer(state) == 3);
-    return state;
-}
-
 #ifdef OLED_ENABLE
 
 #    include "lib/oledkit/oledkit.h"
-
-void oledkit_render_info_user(void) {
-    keyball_oled_render_keyinfo();
-    keyball_oled_render_ballinfo();
-    keyball_oled_render_layerinfo();
-}
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return OLED_ROTATION_180;
 }
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+// Dual Trackball Implementation (PMW3360 + Pimoroni)
+
+// Initialize Pimoroni trackball on left half in addition to existing PMW3360
+void keyboard_pre_init_kb(void) {
+    // Initialize Pimoroni trackball on left half
+    pimoroni_left_init();
+
+    keyboard_pre_init_user();
+}
+
+// Enhanced pointing device for dual trackball support
+report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
+    // Only process on left half with Pimoroni trackball
+    if (is_keyboard_left()) {
+        int16_t x, y;
+        uint8_t click;
+
+        // Read Pimoroni trackball data
+        if (pimoroni_left_read_motion(&x, &y, &click)) {
+            // Add Pimoroni motion to existing mouse report
+            mouse_report.x += x;
+            mouse_report.y += y;
+            if (click) {
+                mouse_report.buttons |= MOUSE_BTN1;
+            }
+        }
+    }
+
+    // Call original pointing device task
+    return pointing_device_task_user(mouse_report);
+}
+
+// Enhanced OLED rendering for dual trackball
+#ifdef OLED_ENABLE
+void oledkit_render_info_user(void) {
+    keyball_oled_render_keyinfo();
+    keyball_oled_render_ballinfo();
+    keyball_oled_render_layerinfo();
+
+    // Add dual trackball status indicators
+    oled_set_cursor(0, 3);
+    if (is_keyboard_left()) {
+        oled_write_P(PSTR("L:Pimoroni"), false);
+    } else {
+        oled_write_P(PSTR("R:PMW3360"), false);
+    }
+}
+#endif
+
+// Set Pimoroni trackball RGB based on layer
+layer_state_t layer_state_set_user(layer_state_t state) {
+    // Auto enable scroll mode when the highest layer is 3
+    keyball_set_scroll_mode(get_highest_layer(state) == 3);
+
+    // Set Pimoroni RGB based on current layer (only on left half)
+    if (is_keyboard_left()) {
+        uint8_t layer = get_highest_layer(state);
+        switch (layer) {
+            case 0: // Base layer - subtle white
+                pimoroni_left_set_rgbw(20, 20, 20, 10);
+                break;
+            case 1: // Symbol layer - blue
+                pimoroni_left_set_rgbw(0, 50, 100, 5);
+                break;
+            case 2: // Mouse layer - green
+                pimoroni_left_set_rgbw(0, 100, 50, 5);
+                break;
+            case 3: // RGB layer - rainbow effect (simplified)
+                pimoroni_left_set_rgbw(100, 50, 0, 5);
+                break;
+            case 5: // Trading layer - orange/red
+                pimoroni_left_set_rgbw(150, 50, 0, 10);
+                break;
+            default: // Other layers - purple
+                pimoroni_left_set_rgbw(100, 0, 100, 5);
+                break;
+        }
+    }
+
+    return state;
+}

@@ -39,3 +39,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AUTO_MOUSE_DEFAULT_LAYER 2
 
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
+
+// Dual Trackball Configuration (PMW3360 + Pimoroni)
+#ifdef POINTING_DEVICE_ENABLE
+
+// I2C configuration for Pimoroni trackball (left half)
+#define I2C1_SDA_PIN GP6
+#define I2C1_SCL_PIN GP7
+
+// Pimoroni trackball configuration
+#define PIMORONI_TRACKBALL_ADDRESS 0x0A
+#define PIMORONI_TRACKBALL_SCALE 3
+#define PIMORONI_TRACKBALL_DEBOUNCE_CYCLES 20
+#define PIMORONI_TRACKBALL_ERROR_COUNT 10
+#define PIMORONI_TRACKBALL_TIMEOUT 100
+
+// Pimoroni trackball orientation for left half installation
+#define PIMORONI_TRACKBALL_INVERT_Y
+// #define PIMORONI_TRACKBALL_ROTATE  // Uncomment if trackball needs 90-degree rotation
+
+// Dual trackball specific settings
+#define DUAL_TRACKBALL_ENABLE
+#define PIMORONI_PRIMARY_SCROLL  // Use Pimoroni for precision scrolling
+
+#endif // POINTING_DEVICE_ENABLE
