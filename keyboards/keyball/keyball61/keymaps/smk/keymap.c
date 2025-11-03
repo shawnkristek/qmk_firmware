@@ -120,28 +120,50 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-// Enhanced pointing device for dual trackball support - simple approach
-report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
-    // Only process Pimoroni trackball data and let keyball handle PMW3360
-    if (is_keyboard_left()) {
+// Process Pimoroni trackball data in keyball's housekeeping task
+void housekeeping_task_kb_user(void) {
+    // Process Pimoroni trackball data on left half
+    // Add to keyball's motion system for split communication
+    int16_t x, y;
+    uint8_t click;
+
+    // Read Pimoroni trackball data if available
+    if (pimoroni_left_read_motion(&x, &y, &click)) {
+        // Add to keyball's motion system (this will be shared in split communication)
+        if (x != 0 || y != 0) {
+            keyball.this_motion.x = add16(keyball.this_motion.x, x);
+            keyball.this_motion.y = add16(keyball.this_motion.y, y);
+        }
+    }
+}
+
+// Handle Pimoroni clicks in keyball's pointing device task
+report_mouse_t pointing_device_task_kb_user(report_mouse_t mouse_report) {
+    // Handle Pimoroni click on master (right half with USB)
+    if (!is_keyboard_left()) {
+        static bool last_click_state = false;
+        bool current_click_state = false;
+
+        // Check if Pimoroni has click data
         int16_t x, y;
         uint8_t click;
-
-        // Read Pimoroni trackball data
         if (pimoroni_left_read_motion(&x, &y, &click)) {
-            // Add Pimoroni motion directly to mouse report
-            if (x != 0 || y != 0 || click) {
-                mouse_report.x += x;
-                mouse_report.y += y;
-                if (click) {
-                    mouse_report.buttons |= MOUSE_BTN1;
-                }
+            current_click_state = (click != 0);
+        }
+
+        // Only update if click state changed
+        if (current_click_state != last_click_state) {
+            if (current_click_state) {
+                mouse_report.buttons |= MOUSE_BTN1;
+            } else {
+                mouse_report.buttons &= ~MOUSE_BTN1;
             }
+            last_click_state = current_click_state;
         }
     }
 
-    // Let the original keyball system handle the PMW3360 and reporting
-    return pointing_device_task_user(mouse_report);
+    // Return modified mouse report
+    return mouse_report;
 }
 
 // Enhanced OLED rendering for dual trackball
