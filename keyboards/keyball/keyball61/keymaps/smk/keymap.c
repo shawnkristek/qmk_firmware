@@ -28,6 +28,9 @@ void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 
+// Forward declarations for keyball internal functions
+extern int16_t add16(int16_t a, int16_t b);
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [0] = LAYOUT_universal(
@@ -110,31 +113,34 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 // Initialize Pimoroni trackball on left half in addition to existing PMW3360
 void keyboard_pre_init_kb(void) {
-    // Initialize Pimoroni trackball on left half
+    // Always try to initialize Pimoroni trackball
+    // It will only work on the half that has the hardware connected
     pimoroni_left_init();
 
     keyboard_pre_init_user();
 }
 
-// Enhanced pointing device for dual trackball support
+// Enhanced pointing device for dual trackball support - simple approach
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
-    // Only process on left half with Pimoroni trackball
+    // Only process Pimoroni trackball data and let keyball handle PMW3360
     if (is_keyboard_left()) {
         int16_t x, y;
         uint8_t click;
 
         // Read Pimoroni trackball data
         if (pimoroni_left_read_motion(&x, &y, &click)) {
-            // Add Pimoroni motion to existing mouse report
-            mouse_report.x += x;
-            mouse_report.y += y;
-            if (click) {
-                mouse_report.buttons |= MOUSE_BTN1;
+            // Add Pimoroni motion directly to mouse report
+            if (x != 0 || y != 0 || click) {
+                mouse_report.x += x;
+                mouse_report.y += y;
+                if (click) {
+                    mouse_report.buttons |= MOUSE_BTN1;
+                }
             }
         }
     }
 
-    // Call original pointing device task
+    // Let the original keyball system handle the PMW3360 and reporting
     return pointing_device_task_user(mouse_report);
 }
 
@@ -155,7 +161,7 @@ void oledkit_render_info_user(void) {
 }
 #endif
 
-// Set Pimoroni trackball RGB based on layer
+// Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
@@ -163,25 +169,34 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     // Set Pimoroni RGB based on current layer (only on left half)
     if (is_keyboard_left()) {
         uint8_t layer = get_highest_layer(state);
-        switch (layer) {
-            case 0: // Base layer - subtle white
-                pimoroni_left_set_rgbw(20, 20, 20, 10);
-                break;
-            case 1: // Symbol layer - blue
-                pimoroni_left_set_rgbw(0, 50, 100, 5);
-                break;
-            case 2: // Mouse layer - green
-                pimoroni_left_set_rgbw(0, 100, 50, 5);
-                break;
-            case 3: // RGB layer - rainbow effect (simplified)
-                pimoroni_left_set_rgbw(100, 50, 0, 5);
-                break;
-            case 5: // Trading layer - orange/red
-                pimoroni_left_set_rgbw(150, 50, 0, 10);
-                break;
-            default: // Other layers - purple
-                pimoroni_left_set_rgbw(100, 0, 100, 5);
-                break;
+
+        // Check if we're in scroll mode
+        bool scroll_mode = keyball_get_scroll_mode();
+
+        if (scroll_mode) {
+            // Purple when in scroll mode
+            pimoroni_left_set_rgbw(150, 0, 150, 10);
+        } else {
+            switch (layer) {
+                case 0: // Base layer - subtle white
+                    pimoroni_left_set_rgbw(20, 20, 20, 10);
+                    break;
+                case 1: // Symbol layer - blue
+                    pimoroni_left_set_rgbw(0, 50, 100, 5);
+                    break;
+                case 2: // Mouse layer - green
+                    pimoroni_left_set_rgbw(0, 100, 50, 5);
+                    break;
+                case 3: // RGB layer - orange
+                    pimoroni_left_set_rgbw(200, 100, 0, 5);
+                    break;
+                case 5: // Trading layer - red/orange
+                    pimoroni_left_set_rgbw(200, 50, 0, 10);
+                    break;
+                default: // Other layers - cyan
+                    pimoroni_left_set_rgbw(0, 150, 150, 5);
+                    break;
+            }
         }
     }
 

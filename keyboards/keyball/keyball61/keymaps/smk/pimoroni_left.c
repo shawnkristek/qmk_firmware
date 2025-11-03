@@ -23,10 +23,7 @@ static bool pimoroni_initialized = false;
 
 // Initialize Pimoroni trackball on left half
 void pimoroni_left_init(void) {
-    // Only initialize on left half
-    if (!is_keyboard_left()) {
-        return;
-    }
+    // Always try to initialize - it will only work on the half with Pimoroni hardware
 
     // Initialize I2C and Pimoroni trackball
     i2c_init();
