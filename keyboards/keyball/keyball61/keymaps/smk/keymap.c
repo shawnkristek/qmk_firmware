@@ -120,46 +120,47 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-// Process Pimoroni trackball data in keyball's housekeeping task
+// Process Pimoroni trackball data as scroll wheel
 void housekeeping_task_kb_user(void) {
-    // Process Pimoroni trackball data on left half
-    // Add to keyball's motion system for split communication
+    // Read Pimoroni trackball data and convert to scroll
     int16_t x, y;
     uint8_t click;
 
     // Read Pimoroni trackball data if available
     if (pimoroni_left_read_motion(&x, &y, &click)) {
-        // Add to keyball's motion system (this will be shared in split communication)
+        // Convert Pimoroni movement to scroll (inverted for natural scrolling)
         if (x != 0 || y != 0) {
+            // Add scroll data to keyball's scroll system
             keyball.this_motion.x = add16(keyball.this_motion.x, x);
             keyball.this_motion.y = add16(keyball.this_motion.y, y);
+
+            // Force scroll mode when using Pimoroni
+            keyball.scroll_mode = true;
         }
     }
 }
 
-// Handle Pimoroni clicks in keyball's pointing device task
+// Handle Pimoroni clicks as middle mouse button
 report_mouse_t pointing_device_task_kb_user(report_mouse_t mouse_report) {
     // Handle Pimoroni click on master (right half with USB)
-    if (!is_keyboard_left()) {
-        static bool last_click_state = false;
-        bool current_click_state = false;
+    static bool last_click_state = false;
+    bool current_click_state = false;
 
-        // Check if Pimoroni has click data
-        int16_t x, y;
-        uint8_t click;
-        if (pimoroni_left_read_motion(&x, &y, &click)) {
-            current_click_state = (click != 0);
-        }
+    // Check if Pimoroni has click data
+    int16_t x, y;
+    uint8_t click;
+    if (pimoroni_left_read_motion(&x, &y, &click)) {
+        current_click_state = (click != 0);
+    }
 
-        // Only update if click state changed
-        if (current_click_state != last_click_state) {
-            if (current_click_state) {
-                mouse_report.buttons |= MOUSE_BTN1;
-            } else {
-                mouse_report.buttons &= ~MOUSE_BTN1;
-            }
-            last_click_state = current_click_state;
+    // Convert Pimoroni click to middle mouse button
+    if (current_click_state != last_click_state) {
+        if (current_click_state) {
+            mouse_report.buttons |= MOUSE_BTN3;  // Middle mouse button
+        } else {
+            mouse_report.buttons &= ~MOUSE_BTN3;
         }
+        last_click_state = current_click_state;
     }
 
     // Return modified mouse report
@@ -183,7 +184,7 @@ void oledkit_render_info_user(void) {
 }
 #endif
 
-// Set Pimoroni trackball RGB based on layer and mode
+// Set Pimoroni trackball RGB based on layer and scroll state
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
@@ -192,33 +193,19 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     if (is_keyboard_left()) {
         uint8_t layer = get_highest_layer(state);
 
-        // Check if we're in scroll mode
-        bool scroll_mode = keyball_get_scroll_mode();
+        // Pimoroni is always in scroll mode - show constant purple
+        // This indicates it's a scroll wheel, not cursor movement
+        pimoroni_left_set_rgbw(150, 0, 150, 10);
 
-        if (scroll_mode) {
-            // Purple when in scroll mode
-            pimoroni_left_set_rgbw(150, 0, 150, 10);
-        } else {
-            switch (layer) {
-                case 0: // Base layer - subtle white
-                    pimoroni_left_set_rgbw(20, 20, 20, 10);
-                    break;
-                case 1: // Symbol layer - blue
-                    pimoroni_left_set_rgbw(0, 50, 100, 5);
-                    break;
-                case 2: // Mouse layer - green
-                    pimoroni_left_set_rgbw(0, 100, 50, 5);
-                    break;
-                case 3: // RGB layer - orange
-                    pimoroni_left_set_rgbw(200, 100, 0, 5);
-                    break;
-                case 5: // Trading layer - red/orange
-                    pimoroni_left_set_rgbw(200, 50, 0, 10);
-                    break;
-                default: // Other layers - cyan
-                    pimoroni_left_set_rgbw(0, 150, 150, 5);
-                    break;
-            }
+        // Optional: Add layer-based brightness modulation
+        switch (layer) {
+            case 5: // Trading layer - brighter purple
+                pimoroni_left_set_rgbw(200, 0, 200, 15);
+                break;
+            default:
+                // Standard purple for all other layers
+                pimoroni_left_set_rgbw(150, 0, 150, 10);
+                break;
         }
     }
 
