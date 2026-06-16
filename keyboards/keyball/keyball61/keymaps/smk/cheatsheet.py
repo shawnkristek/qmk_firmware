@@ -241,9 +241,9 @@ def render_half(keys, x0, y0, accent, parts, right=False, row_idx=0):
             # step inward-and-down, tops tilting toward board centre (CW).
             # Each entry: (key, col, dy, rotation-deg).
             for kc, col, dy, rot in [
-                (keys[4], 4.30, 0.55, 0.0),   # Gui  - square anchor
-                (keys[5], 5.25, 0.78, 13.0),  # Spc  - tilt toward centre
-                (keys[6], 6.12, 1.18, 26.0),  # Esc  - tilt more, lowest
+                (keys[4], 4.03, 0.15, 0.0),   # Gui  - square anchor
+                (keys[5], 5.06, 0.26, 9.0),   # Spc  - tilt toward centre
+                (keys[6], 6.12, 0.46, 18.0),  # Esc  - tilt more, lowest (fixed)
             ]:
                 place(col, dy, 0.0, kc, rot=rot)
     else:
@@ -269,10 +269,12 @@ def render_half(keys, x0, y0, accent, parts, right=False, row_idx=0):
             # (the square outer anchor) nearest the ball. Bksp & Spc occupy the
             # mirror of the left's Spc & Esc slots, shifted one key-slot left so
             # that ghost gap sits between Spc and the ball.
+            # Shift left so Bksp aligns under ] just as Esc aligns under [ on
+            # the left. ] sits near col -1.0 (inner bracket), so Bksp lands there.
             for kc, col, dy, rot in [
-                (keys[0], 0.05, 1.18, -26.0),  # Bksp - innermost (mirror of Esc), most tilt, lowest
-                (keys[1], 0.95, 0.78, -13.0),  # Spc  - middle (mirror of left Spc)
-                # ghost Gui-slot ~col 1.90 (mirror of Gui) intentionally empty
+                (keys[0], -1.05, 0.46, -18.0),  # Bksp - innermost (mirror of Esc, under ]), fixed
+                (keys[1], 0.05, 0.26, -9.0),    # Spc  - middle, pushed out for gap
+                # ghost Gui-slot ~col 1.1 (mirror of Gui) intentionally empty
             ]:
                 place(col, dy, 0.0, kc, rot=rot)
             # TG2(i5)->col4, \(i6)->col5 on the normal grid (no thumb drop).
