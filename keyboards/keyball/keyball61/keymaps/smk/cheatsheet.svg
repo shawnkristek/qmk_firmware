@@ -117,26 +117,28 @@
 <text x="306.0" y="385.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
 <rect x="330.0" y="354.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="349.0" y="378.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
-<g transform="rotate(-15.00 347.6 402.8)">
-<rect x="328.6" y="383.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="347.6" y="407.8" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Gui</text>
+<rect x="385.9" y="390.1" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="404.9" y="414.1" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Gui</text>
+<g transform="rotate(13.00 445.8 419.0)">
+<rect x="426.8" y="400.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
+<text x="445.8" y="419.0" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
+<text x="445.8" y="432.0" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
 </g>
-<rect x="379.8" y="390.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="398.8" y="409.5" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
-<text x="398.8" y="422.5" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
-<g transform="rotate(15.00 450.0 402.8)">
-<rect x="431.0" y="383.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="450.0" y="402.8" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Esc</text>
-<text x="450.0" y="415.8" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
+<g transform="rotate(26.00 483.2 436.2)">
+<rect x="464.2" y="417.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
+<text x="483.2" y="436.2" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Esc</text>
+<text x="483.2" y="449.2" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
 </g>
-<g transform="rotate(15.00 647.0 402.8)">
-<rect x="628.0" y="383.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="647.0" y="402.8" text-anchor="middle" font-size="11" fill="#3da5ff" font-family="Menlo,monospace">Bksp</text>
-<text x="647.0" y="415.8" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
+<g transform="rotate(-26.00 591.1 436.2)">
+<rect x="572.1" y="417.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
+<text x="591.1" y="436.2" text-anchor="middle" font-size="11" fill="#3da5ff" font-family="Menlo,monospace">Bksp</text>
+<text x="591.1" y="449.2" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
 </g>
-<rect x="576.8" y="390.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="595.8" y="409.5" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
-<text x="595.8" y="422.5" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
+<g transform="rotate(-13.00 629.9 419.0)">
+<rect x="610.9" y="400.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
+<text x="629.9" y="419.0" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
+<text x="629.9" y="432.0" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
+</g>
 <rect x="742.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
 <text x="761.0" y="390.5" text-anchor="middle" font-size="12" fill="#3da5ff" font-family="Menlo,monospace">TG2</text>
 <rect x="785.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
@@ -250,17 +252,19 @@
 <rect x="244.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="287.0" y="718.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="330.0" y="711.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<g transform="rotate(-15.00 347.6 759.8)">
-<rect x="328.6" y="740.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="385.9" y="747.1" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(13.00 445.8 776.0)">
+<rect x="426.8" y="757.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="379.8" y="747.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<g transform="rotate(15.00 450.0 759.8)">
-<rect x="431.0" y="740.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(26.00 483.2 793.2)">
+<rect x="464.2" y="774.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<g transform="rotate(15.00 647.0 759.8)">
-<rect x="628.0" y="740.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(-26.00 591.1 793.2)">
+<rect x="572.1" y="774.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="576.8" y="747.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(-13.00 629.9 776.0)">
+<rect x="610.9" y="757.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+</g>
 <rect x="742.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="785.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="804.0" y="747.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">\</text>
@@ -365,18 +369,20 @@
 <text x="306.0" y="1099.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">0</text>
 <rect x="330.0" y="1068.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="349.0" y="1092.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">.</text>
-<g transform="rotate(-15.00 347.6 1116.8)">
-<rect x="328.6" y="1097.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="385.9" y="1104.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(13.00 445.8 1133.0)">
+<rect x="426.8" y="1114.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="379.8" y="1104.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<g transform="rotate(15.00 450.0 1116.8)">
-<rect x="431.0" y="1097.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
-<text x="450.0" y="1121.8" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">Scrl</text>
+<g transform="rotate(26.00 483.2 1150.2)">
+<rect x="464.2" y="1131.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
+<text x="483.2" y="1155.2" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">Scrl</text>
 </g>
-<g transform="rotate(15.00 647.0 1116.8)">
-<rect x="628.0" y="1097.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(-26.00 591.1 1150.2)">
+<rect x="572.1" y="1131.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="576.8" y="1104.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(-13.00 629.9 1133.0)">
+<rect x="610.9" y="1114.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+</g>
 <rect x="742.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
 <text x="761.0" y="1104.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">TG2</text>
 <rect x="785.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
@@ -484,20 +490,22 @@
 <text x="306.0" y="1456.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
 <rect x="330.0" y="1425.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="349.0" y="1449.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↓</text>
-<g transform="rotate(-15.00 347.6 1473.8)">
-<rect x="328.6" y="1454.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="347.6" y="1478.8" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
+<rect x="385.9" y="1461.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="404.9" y="1485.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
+<g transform="rotate(13.00 445.8 1490.0)">
+<rect x="426.8" y="1471.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="445.8" y="1495.0" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">→</text>
 </g>
-<rect x="379.8" y="1461.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="398.8" y="1485.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">→</text>
-<g transform="rotate(15.00 450.0 1473.8)">
-<rect x="431.0" y="1454.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(26.00 483.2 1507.2)">
+<rect x="464.2" y="1488.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<g transform="rotate(15.00 647.0 1473.8)">
-<rect x="628.0" y="1454.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(-26.00 591.1 1507.2)">
+<rect x="572.1" y="1488.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="576.8" y="1461.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="595.8" y="1485.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Del</text>
+<g transform="rotate(-13.00 629.9 1490.0)">
+<rect x="610.9" y="1471.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="629.9" y="1495.0" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Del</text>
+</g>
 <rect x="742.0" y="1437.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="785.0" y="1437.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#ff9d33" stroke-width="1.2"/>
 <text x="804.0" y="1461.5" text-anchor="middle" font-size="12" fill="#ff9d33" font-family="Menlo,monospace">BOOT</text>
@@ -601,19 +609,21 @@
 <rect x="287.0" y="1789.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="330.0" y="1782.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="349.0" y="1806.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Spc</text>
-<g transform="rotate(-15.00 347.6 1830.8)">
-<rect x="328.6" y="1811.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="385.9" y="1818.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(13.00 445.8 1847.0)">
+<rect x="426.8" y="1828.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="379.8" y="1818.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<g transform="rotate(15.00 450.0 1830.8)">
-<rect x="431.0" y="1811.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<g transform="rotate(26.00 483.2 1864.2)">
+<rect x="464.2" y="1845.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<g transform="rotate(15.00 647.0 1830.8)">
-<rect x="628.0" y="1811.8" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="647.0" y="1835.8" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Del</text>
+<g transform="rotate(-26.00 591.1 1864.2)">
+<rect x="572.1" y="1845.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="591.1" y="1869.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Del</text>
 </g>
-<rect x="576.8" y="1818.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="595.8" y="1842.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">CPI--</text>
+<g transform="rotate(-13.00 629.9 1847.0)">
+<rect x="610.9" y="1828.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="629.9" y="1852.0" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">CPI--</text>
+</g>
 <rect x="742.0" y="1794.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="785.0" y="1794.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#ff4d4d" stroke-width="1.2"/>
 <text x="804.0" y="1818.5" text-anchor="middle" font-size="12" fill="#ff4d4d" font-family="Menlo,monospace">TG4</text>

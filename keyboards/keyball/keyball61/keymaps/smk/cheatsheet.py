@@ -237,11 +237,15 @@ def render_half(keys, x0, y0, accent, parts, right=False, row_idx=0):
             # row 4: Ctrl Alt <- ^ (cols 0-3 grid) then Gui Spc Esc thumb fan.
             for i in range(4):
                 place(i, COL_STAGGER[i], 0.0, keys[i])
-            # Thumb cluster fans about a shared pivot up and to the left, so the
-            # three keys (Gui->Spc->Esc) splay out along an arc.
-            place_arc(keys[4:7], pivot_col=THUMB_PIVOT_COL,
-                      pivot_dy=THUMB_PIVOT_DY, radius=THUMB_RADIUS,
-                      theta0=THUMB_THETA0, dtheta=THUMB_DTHETA)
+            # Thumb cluster: Gui is the anchor (square with the grid); Spc & Esc
+            # step inward-and-down, tops tilting toward board centre (CW).
+            # Each entry: (key, col, dy, rotation-deg).
+            for kc, col, dy, rot in [
+                (keys[4], 4.30, 0.55, 0.0),   # Gui  - square anchor
+                (keys[5], 5.25, 0.78, 13.0),  # Spc  - tilt toward centre
+                (keys[6], 6.12, 1.18, 26.0),  # Esc  - tilt more, lowest
+            ]:
+                place(col, dy, 0.0, kc, rot=rot)
     else:
         # ---- RIGHT HALF ---- (col 0 = inner / board centre)
         if row_idx < 3:
@@ -258,17 +262,19 @@ def render_half(keys, x0, y0, accent, parts, right=False, row_idx=0):
         else:
             # row 4: Bksp Spc [ball ball ball] TG2 \ .
             # Thumb cluster = Bksp(i0) Spc(i1); TG2(i5) \(i6) shift to cols 4,5.
-            # Fan mirrors the left: pivot up/right of the cluster, angles negated.
-            # Order inner->outer is Spc then Bksp.
-            # Mirror the left fan exactly (same params, reflected about the half
-            # centre col 3). The right cluster has 2 keys; they occupy the
-            # mirror of the left cluster's outer two slots. keys[0]=Bksp (outer)
-            # keys[1]=Spc (inner, nearest centre).
-            place_arc([keys[0], keys[1]],
-                      pivot_col=THUMB_PIVOT_COL,
-                      pivot_dy=THUMB_PIVOT_DY, radius=THUMB_RADIUS,
-                      theta0=THUMB_THETA0, dtheta=THUMB_DTHETA,
-                      mirror=True, mirror_axis=2.6)
+            # Mirror of the left fan: Bksp is the square anchor (sits just left
+            # of the ball); Spc steps inward-and-down toward centre, top tilting
+            # toward centre (CCW). Each entry: (key, col, dy, rotation-deg).
+            # The right cluster reserves a ghost slot mirroring the left's Gui
+            # (the square outer anchor) nearest the ball. Bksp & Spc occupy the
+            # mirror of the left's Spc & Esc slots, shifted one key-slot left so
+            # that ghost gap sits between Spc and the ball.
+            for kc, col, dy, rot in [
+                (keys[0], 0.05, 1.18, -26.0),  # Bksp - innermost (mirror of Esc), most tilt, lowest
+                (keys[1], 0.95, 0.78, -13.0),  # Spc  - middle (mirror of left Spc)
+                # ghost Gui-slot ~col 1.90 (mirror of Gui) intentionally empty
+            ]:
+                place(col, dy, 0.0, kc, rot=rot)
             # TG2(i5)->col4, \(i6)->col5 on the normal grid (no thumb drop).
             for i in (5, 6):
                 col = i - 1        # 4, 5
