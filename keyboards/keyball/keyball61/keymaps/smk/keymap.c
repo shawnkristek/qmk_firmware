@@ -23,13 +23,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Dual trackball support
 #include "lib/keyball/keyball.h"
 
+// Custom split transaction carrying Pimoroni scroll/click to the master.
+#include "transactions.h"
+#include "pimoroni_split.h"
+
 // Forward declarations for Pimoroni trackball integration
 void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-
-// Forward declarations for keyball internal functions
-extern int16_t add16(int16_t a, int16_t b);
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -120,89 +121,144 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-// Enable runtime debug so CONSOLE_ENABLE dprintf output is actually emitted.
-void keyboard_post_init_user(void) {
-    debug_enable   = true;
-    debug_mouse    = true;
+// Read the Pimoroni once and turn it into a scroll/click payload. The Pimoroni's
+// motion registers are read-and-clear, so this MUST be the only place the ball
+// is read each cycle. Whichever half physically has the ball calls this; the
+// result is then either applied locally (ball on master) or shipped to the
+// master over the split RPC (ball on slave).
+static pimoroni_scroll_t pimoroni_compute_scroll(void) {
+    static int16_t scroll_acc_v = 0;
+    static int16_t scroll_acc_h = 0;
+    const int16_t  SCROLL_DIVISOR = 8;
+
+    pimoroni_scroll_t out = {0, 0, 0};
+
+    int16_t x, y;
+    uint8_t click;
+    if (!pimoroni_left_read_motion(&x, &y, &click)) {
+        return out;
+    }
+
+    out.click = click;
+
+    // Layer 0 = dedicated scroll wheel. On other layers the ball is idle for
+    // now (cursor work is done by the right-hand PMW3360).
+    if (get_highest_layer(layer_state) == 0) {
+        // Trackball is mounted rotated 90deg, so the ball's x axis is physical
+        // up/down -> drive vertical scroll from x. Deltas come out fast (one
+        // detent ~= 3, quick rolls ~= 12) because the driver squares the
+        // offset, so accumulate and emit one tick per SCROLL_DIVISOR units;
+        // small movements are kept (not dropped as integer division would).
+        scroll_acc_v += -x; // Vertical scroll (natural rolling motion)
+        scroll_acc_h += y;  // Horizontal scroll
+
+        out.v = scroll_acc_v / SCROLL_DIVISOR;
+        out.h = scroll_acc_h / SCROLL_DIVISOR;
+        scroll_acc_v -= out.v * SCROLL_DIVISOR; // keep remainder
+        scroll_acc_h -= out.h * SCROLL_DIVISOR;
+
+        if (out.v != 0 || out.h != 0) {
+            dprintf("Pimoroni SCROLL: h=%d, v=%d (x=%d y=%d)\n", out.h, out.v, x, y);
+        }
+    }
+
+    return out;
 }
 
-// NOTE: The Pimoroni's motion registers are read-and-clear, so it must be read
-// from exactly ONE place. That owner is pointing_device_task_kb() below. Do not
-// add a second read here (an earlier debug "test" read in this task was stealing
-// the deltas, leaving the pointing task with x=0/y=0 and no scroll).
+// Latest Pimoroni payload, ready for the master to apply to its mouse report.
+// On the slave this is filled by the RPC handler; on the master it is filled
+// either by the RPC invoke (ball on slave) or directly (ball on master).
+static pimoroni_scroll_t pimoroni_latest = {0, 0, 0};
 
-// Split pointing device callback - runs on each half independently
+#ifdef SPLIT_KEYBOARD
+// Slave side: the master asks for the current Pimoroni scroll/click. We read
+// the ball here (read-and-clear) and hand back the computed payload.
+static void pimoroni_get_scroll_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
+    pimoroni_scroll_t s = pimoroni_compute_scroll();
+    *(pimoroni_scroll_t *)out_data = s;
+}
+#endif
+
+// Enable runtime debug so CONSOLE_ENABLE dprintf output is actually emitted,
+// and register the slave-side Pimoroni RPC handler.
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+    debug_mouse  = true;
+
+#ifdef SPLIT_KEYBOARD
+    // Only the slave answers RPCs. The Pimoroni lives on the left half, so the
+    // handler matters when the left is the slave (USB on the right).
+    if (!is_keyboard_master()) {
+        transaction_register_rpc(PIMORONI_GET_SCROLL, pimoroni_get_scroll_handler);
+    }
+#endif
+}
+
+// Apply the latest Pimoroni payload to the outgoing mouse report. Runs on the
+// master so the data actually reaches the host.
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     static bool last_click_state = false;
-    bool current_click_state = false;
 
-    // Only process Pimoroni on the left half
-    if (is_keyboard_left()) {
-        // Read Pimoroni trackball data
-        int16_t x, y;
-        uint8_t click;
-        if (pimoroni_left_read_motion(&x, &y, &click)) {
-            dprintf("Left half Pimoroni motion: x=%d, y=%d, click=%d\n", x, y, click);
+    if (is_keyboard_master()) {
+        // If the ball is on THIS (master) half, read it directly. Otherwise the
+        // payload was already pulled from the slave in housekeeping_task_user.
+        if (is_keyboard_left()) {
+            pimoroni_latest = pimoroni_compute_scroll();
+        }
 
-            current_click_state = (click != 0);
+        // Inject scroll, then consume it so the same delta is not re-applied on
+        // the next report (which would scroll forever). New motion accumulates
+        // into pimoroni_latest between reports via the local read / RPC poll.
+        mouse_report.h = pimoroni_latest.h;
+        mouse_report.v = pimoroni_latest.v;
+        pimoroni_latest.h = 0;
+        pimoroni_latest.v = 0;
 
-            // Handle scroll mode on layer 0 (base layer)
-            uint8_t current_layer = get_highest_layer(layer_state);
-            dprintf("Left half layer: %d\n", current_layer);
-
-            if (current_layer == 0) {
-                // Layer 0: Dedicated scroll wheel mode.
-                // Trackball is mounted rotated 90deg, so the ball's x axis is
-                // physical up/down -> drive vertical scroll from x.
-                //
-                // The raw deltas come out fast (one detent ~= 3, quick rolls
-                // ~= 12) because the driver squares the offset. Accumulate the
-                // motion and only emit one scroll tick per SCROLL_DIVISOR units,
-                // so small movements aren't dropped (as integer division would)
-                // but overall scroll speed is reduced.
-                static int16_t scroll_acc_v = 0;
-                static int16_t scroll_acc_h = 0;
-                const int16_t SCROLL_DIVISOR = 8;
-
-                scroll_acc_v += -x; // Vertical scroll (natural rolling motion)
-                scroll_acc_h += y;  // Horizontal scroll
-
-                mouse_report.v = scroll_acc_v / SCROLL_DIVISOR;
-                mouse_report.h = scroll_acc_h / SCROLL_DIVISOR;
-                scroll_acc_v -= mouse_report.v * SCROLL_DIVISOR; // keep remainder
-                scroll_acc_h -= mouse_report.h * SCROLL_DIVISOR;
-
-                // Suppress cursor movement entirely in scroll mode so the ball
-                // does not also drag the pointer from the combined report.
-                mouse_report.x = 0;
-                mouse_report.y = 0;
-                if (mouse_report.v != 0 || mouse_report.h != 0) {
-                    dprintf("Left half SCROLL: h=%d, v=%d\n", mouse_report.h, mouse_report.v);
-                }
+        // Edge-detect the click so we set/clear the button cleanly.
+        bool current_click_state = (pimoroni_latest.click != 0);
+        if (current_click_state != last_click_state) {
+            if (current_click_state) {
+                mouse_report.buttons |= MOUSE_BTN1; // Left mouse button
+                dprintf("Pimoroni: Left mouse PRESSED\n");
             } else {
-                // Other layers: Mouse cursor mode
-                if (x != 0 || y != 0) {
-                    mouse_report.x = x;
-                    mouse_report.y = -y; // Invert Y for natural movement
-                    dprintf("Left half MOUSE: x=%d, y=%d\n", mouse_report.x, mouse_report.y);
-                }
+                mouse_report.buttons &= ~MOUSE_BTN1;
+                dprintf("Pimoroni: Left mouse RELEASED\n");
             }
-
-            // Convert Pimoroni click to left mouse button
-            if (current_click_state != last_click_state) {
-                if (current_click_state) {
-                    mouse_report.buttons |= MOUSE_BTN1;  // Left mouse button
-                    dprintf("Left half: Left mouse PRESSED\n");
-                } else {
-                    mouse_report.buttons &= ~MOUSE_BTN1;
-                    dprintf("Left half: Left mouse RELEASED\n");
-                }
-                last_click_state = current_click_state;
-            }
+            last_click_state = current_click_state;
+        } else if (current_click_state) {
+            // Hold the button while pressed across reports.
+            mouse_report.buttons |= MOUSE_BTN1;
         }
     }
 
     return mouse_report;
+}
+
+// Master side: pull the Pimoroni scroll/click from the slave every few ms so
+// pointing_device_task_kb has fresh data to inject. Only needed when the ball
+// is on the OTHER half (i.e. left is the slave). When the ball is on the master
+// itself, pointing_device_task_kb reads it directly and this is skipped.
+void housekeeping_task_user(void) {
+#ifdef SPLIT_KEYBOARD
+    if (is_keyboard_master() && !is_keyboard_left()) {
+        static uint32_t last_sync = 0;
+        uint32_t        now       = timer_read32();
+        if (TIMER_DIFF_32(now, last_sync) < 4) {
+            return;
+        }
+        last_sync = now;
+
+        pimoroni_scroll_t recv = {0, 0, 0};
+        if (transaction_rpc_exec(PIMORONI_GET_SCROLL, 0, NULL, sizeof(recv), &recv)) {
+            // Accumulate scroll so deltas are never lost if the pointing task
+            // has not consumed the previous poll yet. Click is a level, not a
+            // delta, so take it as-is.
+            pimoroni_latest.h     += recv.h;
+            pimoroni_latest.v     += recv.v;
+            pimoroni_latest.click = recv.click;
+        }
+    }
+#endif
 }
 
 // Enhanced OLED rendering for dual trackball

@@ -38,6 +38,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 2
 
+// Custom split transaction to carry the left-half Pimoroni scroll/click to the
+// master half (see pimoroni_split.h).
+#define SPLIT_TRANSACTION_IDS_USER PIMORONI_GET_SCROLL
+
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
 // Dual Trackball Configuration (PMW3360 + Pimoroni)
