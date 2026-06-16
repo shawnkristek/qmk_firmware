@@ -120,50 +120,88 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-// Process Pimoroni trackball data as scroll wheel
-void housekeeping_task_kb_user(void) {
-    // Read Pimoroni trackball data and convert to scroll
-    int16_t x, y;
-    uint8_t click;
-
-    // Read Pimoroni trackball data if available
-    if (pimoroni_left_read_motion(&x, &y, &click)) {
-        // Convert Pimoroni movement to scroll (inverted for natural scrolling)
-        if (x != 0 || y != 0) {
-            // Add scroll data to keyball's scroll system
-            keyball.this_motion.x = add16(keyball.this_motion.x, x);
-            keyball.this_motion.y = add16(keyball.this_motion.y, y);
-
-            // Force scroll mode when using Pimoroni
-            keyball.scroll_mode = true;
-        }
-    }
+// Enable runtime debug so CONSOLE_ENABLE dprintf output is actually emitted.
+void keyboard_post_init_user(void) {
+    debug_enable   = true;
+    debug_mouse    = true;
 }
 
-// Handle Pimoroni clicks as middle mouse button
-report_mouse_t pointing_device_task_kb_user(report_mouse_t mouse_report) {
-    // Handle Pimoroni click on master (right half with USB)
+// NOTE: The Pimoroni's motion registers are read-and-clear, so it must be read
+// from exactly ONE place. That owner is pointing_device_task_kb() below. Do not
+// add a second read here (an earlier debug "test" read in this task was stealing
+// the deltas, leaving the pointing task with x=0/y=0 and no scroll).
+
+// Split pointing device callback - runs on each half independently
+report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     static bool last_click_state = false;
     bool current_click_state = false;
 
-    // Check if Pimoroni has click data
-    int16_t x, y;
-    uint8_t click;
-    if (pimoroni_left_read_motion(&x, &y, &click)) {
-        current_click_state = (click != 0);
-    }
+    // Only process Pimoroni on the left half
+    if (is_keyboard_left()) {
+        // Read Pimoroni trackball data
+        int16_t x, y;
+        uint8_t click;
+        if (pimoroni_left_read_motion(&x, &y, &click)) {
+            dprintf("Left half Pimoroni motion: x=%d, y=%d, click=%d\n", x, y, click);
 
-    // Convert Pimoroni click to middle mouse button
-    if (current_click_state != last_click_state) {
-        if (current_click_state) {
-            mouse_report.buttons |= MOUSE_BTN3;  // Middle mouse button
-        } else {
-            mouse_report.buttons &= ~MOUSE_BTN3;
+            current_click_state = (click != 0);
+
+            // Handle scroll mode on layer 0 (base layer)
+            uint8_t current_layer = get_highest_layer(layer_state);
+            dprintf("Left half layer: %d\n", current_layer);
+
+            if (current_layer == 0) {
+                // Layer 0: Dedicated scroll wheel mode.
+                // Trackball is mounted rotated 90deg, so the ball's x axis is
+                // physical up/down -> drive vertical scroll from x.
+                //
+                // The raw deltas come out fast (one detent ~= 3, quick rolls
+                // ~= 12) because the driver squares the offset. Accumulate the
+                // motion and only emit one scroll tick per SCROLL_DIVISOR units,
+                // so small movements aren't dropped (as integer division would)
+                // but overall scroll speed is reduced.
+                static int16_t scroll_acc_v = 0;
+                static int16_t scroll_acc_h = 0;
+                const int16_t SCROLL_DIVISOR = 8;
+
+                scroll_acc_v += -x; // Vertical scroll (natural rolling motion)
+                scroll_acc_h += y;  // Horizontal scroll
+
+                mouse_report.v = scroll_acc_v / SCROLL_DIVISOR;
+                mouse_report.h = scroll_acc_h / SCROLL_DIVISOR;
+                scroll_acc_v -= mouse_report.v * SCROLL_DIVISOR; // keep remainder
+                scroll_acc_h -= mouse_report.h * SCROLL_DIVISOR;
+
+                // Suppress cursor movement entirely in scroll mode so the ball
+                // does not also drag the pointer from the combined report.
+                mouse_report.x = 0;
+                mouse_report.y = 0;
+                if (mouse_report.v != 0 || mouse_report.h != 0) {
+                    dprintf("Left half SCROLL: h=%d, v=%d\n", mouse_report.h, mouse_report.v);
+                }
+            } else {
+                // Other layers: Mouse cursor mode
+                if (x != 0 || y != 0) {
+                    mouse_report.x = x;
+                    mouse_report.y = -y; // Invert Y for natural movement
+                    dprintf("Left half MOUSE: x=%d, y=%d\n", mouse_report.x, mouse_report.y);
+                }
+            }
+
+            // Convert Pimoroni click to left mouse button
+            if (current_click_state != last_click_state) {
+                if (current_click_state) {
+                    mouse_report.buttons |= MOUSE_BTN1;  // Left mouse button
+                    dprintf("Left half: Left mouse PRESSED\n");
+                } else {
+                    mouse_report.buttons &= ~MOUSE_BTN1;
+                    dprintf("Left half: Left mouse RELEASED\n");
+                }
+                last_click_state = current_click_state;
+            }
         }
-        last_click_state = current_click_state;
     }
 
-    // Return modified mouse report
     return mouse_report;
 }
 
@@ -177,36 +215,76 @@ void oledkit_render_info_user(void) {
     // Add dual trackball status indicators
     oled_set_cursor(0, 3);
     if (is_keyboard_left()) {
-        oled_write_P(PSTR("L:Pimoroni"), false);
+        uint8_t layer = get_highest_layer(layer_state);
+        if (layer == 0) {
+            oled_write_P(PSTR("L:Scroll"), false);
+        } else {
+            oled_write_P(PSTR("L:Mouse"), false);
+        }
     } else {
         oled_write_P(PSTR("R:PMW3360"), false);
     }
 }
 #endif
 
-// Set Pimoroni trackball RGB based on layer and scroll state
+// Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
 
+    uint8_t layer = get_highest_layer(state);
+    dprintf("Layer change: Current layer = %d\n", layer);
+
     // Set Pimoroni RGB based on current layer (only on left half)
     if (is_keyboard_left()) {
-        uint8_t layer = get_highest_layer(state);
+        dprintf("Setting Pimoroni RGB for layer %d on left half\n", layer);
 
-        // Pimoroni is always in scroll mode - show constant purple
-        // This indicates it's a scroll wheel, not cursor movement
-        pimoroni_left_set_rgbw(150, 0, 150, 10);
+        // Set RGB based on current mode
+        if (layer == 0) {
+            // Layer 0: Scroll mode - Blue color
+            pimoroni_left_set_rgbw(0, 100, 255, 10);
+            dprintf("Pimoroni: Setting BLUE (scroll mode) for layer 0\n");
+        } else {
+            // Other layers: Mouse mode - Green color
+            pimoroni_left_set_rgbw(0, 255, 100, 10);
+            dprintf("Pimoroni: Setting GREEN (mouse mode) for layer %d\n", layer);
+        }
 
-        // Optional: Add layer-based brightness modulation
+        // Optional: Add layer-specific variations
         switch (layer) {
-            case 5: // Trading layer - brighter purple
+            case 1: // Symbols layer - Cyan
+                pimoroni_left_set_rgbw(0, 200, 200, 15);
+                dprintf("Pimoroni: Setting CYAN for layer 1 (Symbols)\n");
+                break;
+            case 2: // Media/Mouse layer - Bright green
+                pimoroni_left_set_rgbw(0, 255, 50, 15);
+                dprintf("Pimoroni: Setting BRIGHT GREEN for layer 2 (Media)\n");
+                break;
+            case 3: // RGB/Settings layer - Orange
+                pimoroni_left_set_rgbw(255, 150, 0, 15);
+                dprintf("Pimoroni: Setting ORANGE for layer 3 (Settings)\n");
+                break;
+            case 4: // Gaming layer - Red
+                pimoroni_left_set_rgbw(255, 50, 0, 15);
+                dprintf("Pimoroni: Setting RED for layer 4 (Gaming)\n");
+                break;
+            case 5: // Trading layer - Purple
                 pimoroni_left_set_rgbw(200, 0, 200, 15);
+                dprintf("Pimoroni: Setting PURPLE for layer 5 (Trading)\n");
                 break;
             default:
-                // Standard purple for all other layers
-                pimoroni_left_set_rgbw(150, 0, 150, 10);
+                // Default colors based on mode
+                if (layer == 0) {
+                    pimoroni_left_set_rgbw(0, 100, 255, 10); // Scroll mode blue
+                    dprintf("Pimoroni: Setting default BLUE for layer 0\n");
+                } else {
+                    pimoroni_left_set_rgbw(0, 255, 100, 10); // Mouse mode green
+                    dprintf("Pimoroni: Setting default GREEN for layer %d\n", layer);
+                }
                 break;
         }
+    } else {
+        dprintf("Right half detected, not setting Pimoroni RGB\n");
     }
 
     return state;
