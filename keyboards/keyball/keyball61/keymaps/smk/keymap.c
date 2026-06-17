@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+static void pimoroni_apply_layer_color(uint8_t layer);
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -239,6 +240,24 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
 // is on the OTHER half (i.e. left is the slave). When the ball is on the master
 // itself, pointing_device_task_kb reads it directly and this is skipped.
 void housekeeping_task_user(void) {
+    // Mirror the RGB on/off state (toggled by RGB_TOG on layer 3) onto the OLED
+    // and the Pimoroni LED. RGB enable is synced across the split, so this runs
+    // correctly on both halves and reacts even without a layer change.
+    static bool last_rgb_on = true;
+    bool rgb_on = rgblight_is_enabled();
+    if (rgb_on != last_rgb_on) {
+        last_rgb_on = rgb_on;
+#ifdef OLED_ENABLE
+        if (rgb_on) {
+            oled_on();
+        } else {
+            oled_clear();
+            oled_off();
+        }
+#endif
+        pimoroni_apply_layer_color(get_highest_layer(layer_state));
+    }
+
 #ifdef SPLIT_KEYBOARD
     if (is_keyboard_master() && !is_keyboard_left()) {
         static uint32_t last_sync = 0;
@@ -264,6 +283,10 @@ void housekeeping_task_user(void) {
 // Enhanced OLED rendering for dual trackball
 #ifdef OLED_ENABLE
 void oledkit_render_info_user(void) {
+    // When RGB is toggled off (RGB_TOG on layer 3), keep the OLED dark too.
+    if (!rgblight_is_enabled()) {
+        return;
+    }
     keyball_oled_render_keyinfo();
     keyball_oled_render_ballinfo();
     keyball_oled_render_layerinfo();
@@ -283,65 +306,34 @@ void oledkit_render_info_user(void) {
 }
 #endif
 
+// Set the Pimoroni trackball LED for the given layer -- or turn it fully off
+// when RGB lighting is disabled (RGB_TOG on layer 3). Only acts on the half
+// that has the Pimoroni (left). RGB enable state is synced across the split,
+// so rgblight_is_enabled() is valid on both halves.
+static void pimoroni_apply_layer_color(uint8_t layer) {
+    if (!is_keyboard_left()) {
+        return;
+    }
+    if (!rgblight_is_enabled()) {
+        pimoroni_left_set_rgbw(0, 0, 0, 0); // LED off with the rest of the RGB
+        return;
+    }
+    switch (layer) {
+        case 1: pimoroni_left_set_rgbw(0, 200, 200, 15); break; // Symbols - cyan
+        case 2: pimoroni_left_set_rgbw(0, 255, 50, 15);  break; // Media    - bright green
+        case 3: pimoroni_left_set_rgbw(255, 150, 0, 15); break; // Settings - orange
+        case 4: pimoroni_left_set_rgbw(255, 50, 0, 15);  break; // Gaming   - red
+        case 5: pimoroni_left_set_rgbw(200, 0, 200, 15); break; // Trading  - purple
+        case 0: pimoroni_left_set_rgbw(0, 100, 255, 10); break; // Scroll   - blue
+        default: pimoroni_left_set_rgbw(0, 255, 100, 10); break; // Mouse   - green
+    }
+}
+
 // Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
 
-    uint8_t layer = get_highest_layer(state);
-    dprintf("Layer change: Current layer = %d\n", layer);
-
-    // Set Pimoroni RGB based on current layer (only on left half)
-    if (is_keyboard_left()) {
-        dprintf("Setting Pimoroni RGB for layer %d on left half\n", layer);
-
-        // Set RGB based on current mode
-        if (layer == 0) {
-            // Layer 0: Scroll mode - Blue color
-            pimoroni_left_set_rgbw(0, 100, 255, 10);
-            dprintf("Pimoroni: Setting BLUE (scroll mode) for layer 0\n");
-        } else {
-            // Other layers: Mouse mode - Green color
-            pimoroni_left_set_rgbw(0, 255, 100, 10);
-            dprintf("Pimoroni: Setting GREEN (mouse mode) for layer %d\n", layer);
-        }
-
-        // Optional: Add layer-specific variations
-        switch (layer) {
-            case 1: // Symbols layer - Cyan
-                pimoroni_left_set_rgbw(0, 200, 200, 15);
-                dprintf("Pimoroni: Setting CYAN for layer 1 (Symbols)\n");
-                break;
-            case 2: // Media/Mouse layer - Bright green
-                pimoroni_left_set_rgbw(0, 255, 50, 15);
-                dprintf("Pimoroni: Setting BRIGHT GREEN for layer 2 (Media)\n");
-                break;
-            case 3: // RGB/Settings layer - Orange
-                pimoroni_left_set_rgbw(255, 150, 0, 15);
-                dprintf("Pimoroni: Setting ORANGE for layer 3 (Settings)\n");
-                break;
-            case 4: // Gaming layer - Red
-                pimoroni_left_set_rgbw(255, 50, 0, 15);
-                dprintf("Pimoroni: Setting RED for layer 4 (Gaming)\n");
-                break;
-            case 5: // Trading layer - Purple
-                pimoroni_left_set_rgbw(200, 0, 200, 15);
-                dprintf("Pimoroni: Setting PURPLE for layer 5 (Trading)\n");
-                break;
-            default:
-                // Default colors based on mode
-                if (layer == 0) {
-                    pimoroni_left_set_rgbw(0, 100, 255, 10); // Scroll mode blue
-                    dprintf("Pimoroni: Setting default BLUE for layer 0\n");
-                } else {
-                    pimoroni_left_set_rgbw(0, 255, 100, 10); // Mouse mode green
-                    dprintf("Pimoroni: Setting default GREEN for layer %d\n", layer);
-                }
-                break;
-        }
-    } else {
-        dprintf("Right half detected, not setting Pimoroni RGB\n");
-    }
-
+    pimoroni_apply_layer_color(get_highest_layer(state));
     return state;
 }
