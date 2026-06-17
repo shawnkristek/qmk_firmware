@@ -33,70 +33,72 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
 
+// Window-management helper: emit Ctrl+Opt+<key> for Rectangle shortcuts.
+#define WM(kc) LCTL(LALT(kc))
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [0] = LAYOUT_universal(
-    KC_GRV   , KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                                  KC_6     , KC_7     , KC_8     , KC_9     , KC_0     , KC_MINS  ,
-    KC_TAB   , KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                                  KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     , KC_EQL   ,
-    KC_CAPS  , KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                                  KC_H     , KC_J     , KC_K     , KC_L     , KC_SCLN  ,LT(1,KC_ENT),
-    LT(1,KC_LSFT),KC_Z  , KC_X     , KC_C     , KC_V     , KC_B     , KC_LBRC  ,              KC_RBRC, KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  , KC_QUOT  ,
-    KC_LCTL  , KC_LALT  , KC_LEFT  , KC_UP    , KC_LGUI  , LT(2,KC_SPC),LT(3,KC_ESC),      LT(3,KC_BSPC),LT(2,KC_SPC),_______,_______ , _______  , TG(2)    , KC_BSLS
+    KC_GRV       , KC_1         , KC_2         , KC_3         , KC_4         , KC_5         ,                                 KC_6         , KC_7         , KC_8         , KC_9         , KC_0         , KC_MINS      ,
+    KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , KC_T         ,                                 KC_Y         , KC_U         , KC_I         , KC_O         , KC_P         , KC_EQL       ,
+    KC_CAPS      , KC_A         , KC_S         , KC_D         , KC_F         , KC_G         ,                                 KC_H         , KC_J         , KC_K         , KC_L         , KC_SCLN      , KC_ENT       ,
+    KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , KC_B         , KC_LBRC      ,   KC_RBRC      , KC_N         , KC_M         , KC_COMM      , KC_DOT       , KC_SLSH      , KC_RSFT      ,
+    KC_LCTL      , KC_LALT      , _______      , _______      , KC_LGUI      , LT(1,KC_SPC) , KC_ESC       ,   KC_BSPC      , MO(2)        , _______      , _______      , _______      , TG(1)        , KC_BSLS
 ),
 
+// Layer 1: Nav / Num. Hold left thumb (Space). MO(3) reaches Settings.
 [1] = LAYOUT_universal(
-    S(KC_GRV), S(KC_1)  , S(KC_2)  , S(KC_3)  , S(KC_4)  , S(KC_5)  ,                                  S(KC_6)  , S(KC_7)  , S(KC_8)  , S(KC_9)  , S(KC_0)  , S(KC_MINS),
-    S(KC_TAB), S(KC_Q)  , S(KC_W)  , S(KC_E)  , S(KC_R)  , S(KC_T)  ,                                  S(KC_Y)  , S(KC_U)  , S(KC_I)  , S(KC_O)  , S(KC_P)  , S(KC_EQL) ,
-    _______  , S(KC_A)  , S(KC_S)  , S(KC_D)  , S(KC_F)  , S(KC_G)  ,                                  S(KC_H)  , S(KC_J)  , S(KC_K)  , S(KC_L)  , S(KC_SCLN),  _______ ,
-    _______  , S(KC_Z)  , S(KC_X)  , S(KC_C)  , S(KC_V)  , S(KC_B)  , S(KC_LBRC),           S(KC_RBRC), S(KC_N)  , S(KC_M)  , S(KC_COMM), S(KC_DOT), S(KC_SLSH), S(KC_QUOT),
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , S(KC_BSLS)
+    SSNP_FRE     , KC_F1        , KC_F2        , KC_F3        , KC_F4        , KC_F5        ,                                 KC_F6        , KC_F7        , KC_F8        , KC_F9        , KC_F10       , KC_F11       ,
+    SSNP_VRT     , _______      , KC_7         , KC_8         , KC_9         , _______      ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
+    SSNP_HOR     , _______      , KC_4         , KC_5         , KC_6         , S(KC_SCLN)   ,                                 KC_PGUP      , KC_BTN1      , KC_DOWN      , KC_BTN2      , KC_BTN3      , _______      ,
+    _______      , _______      , KC_1         , KC_2         , KC_3         , S(KC_MINS)   , S(KC_8)      ,   S(KC_9)      , KC_PGDN      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , MO(3)        , KC_0         , KC_DOT       , _______      , _______      , SCRL_MO      ,   _______      , _______      , _______      , _______      , _______      , TG(1)        , TG(4)
 ),
 
+// Layer 2: Window management (Rectangle). Held via right thumb (Enter).
+// Every key emits Ctrl+Opt+<key> to match the Rectangle shortcuts:
+//   arrows = halves, U/I/J/K = corners, D/F/G = first/center/last third,
+//   E = first two-thirds, T = last two-thirds.
 [2] = LAYOUT_universal(
-    SSNP_FRE , KC_F1    , KC_F2    , KC_F3    , KC_F4    , KC_F5    ,                                  KC_F6    , KC_F7    , KC_F8    , KC_F9    , KC_F10   , KC_F11   ,
-    SSNP_VRT , _______  , KC_7     , KC_8     , KC_9     , _______  ,                                  _______  , KC_LEFT  , KC_UP    , KC_RGHT  , _______  , KC_F12   ,
-    SSNP_HOR , _______  , KC_4     , KC_5     , KC_6     , S(KC_SCLN),                                 KC_PGUP  , KC_BTN1  , KC_DOWN  , KC_BTN2  , KC_BTN3  , _______  ,
-    _______  , _______  , KC_1     , KC_2     , KC_3     , S(KC_MINS), S(KC_8)  ,            S(KC_9)  , KC_PGDN  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , KC_0     , KC_DOT   , _______  , _______  , SCRL_MO  ,            _______   , _______  , _______  , _______  , _______  , TG(2)    , TG(4)
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , WM(KC_E)     , _______      , WM(KC_T)     ,                                 _______      , WM(KC_U)     , WM(KC_I)     , _______      , _______      , _______      ,
+    _______      , _______      , _______      , WM(KC_D)     , WM(KC_F)     , WM(KC_G)     ,                                 _______      , WM(KC_J)     , WM(KC_K)     , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , WM(KC_LEFT)  , WM(KC_DOWN)  , WM(KC_UP)    , WM(KC_RGHT)  , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______
 ),
 
+// Layer 3: Settings (RGB / CPI / boot). Reached via MO(3) on the Nav layer.
 [3] = LAYOUT_universal(
-    RGB_TOG  , AML_TO   , AML_I50  , AML_D50  , _______  , _______  ,                                  RGB_M_P  , RGB_M_B  , RGB_M_R  , RGB_M_SW , RGB_M_SN , RGB_M_K  ,
-    RGB_MOD  , RGB_HUI  , RGB_SAI  , RGB_VAI  , _______  , _______  ,                                  RGB_M_X  , RGB_M_G  , RGB_M_T  , RGB_M_TW , _______  , _______  ,
-    RGB_RMOD , RGB_HUD  , RGB_SAD  , RGB_VAD  , _______  , _______  ,                                  CPI_D1K  , CPI_D100 , CPI_I100 , CPI_I1K  , KBC_SAVE , KBC_RST  ,
-    _______  , _______  , SCRL_DVD , SCRL_DVI , SCRL_MO  , SCRL_TO  , EE_CLR   ,            EE_CLR   , KC_HOME  , KC_PGDN  , KC_PGUP  , KC_END   , _______  , _______  ,
-    QK_BOOT  , _______  , KC_LEFT  , KC_DOWN  , KC_UP    , KC_RGHT  , _______  ,            _______   , KC_DEL   , _______  , _______  , _______  , _______  , QK_BOOT
+    RGB_TOG      , AML_TO       , AML_I50      , AML_D50      , _______      , _______      ,                                 RGB_M_P      , RGB_M_B      , RGB_M_R      , RGB_M_SW     , RGB_M_SN     , RGB_M_K      ,
+    RGB_MOD      , RGB_HUI      , RGB_SAI      , RGB_VAI      , _______      , _______      ,                                 RGB_M_X      , RGB_M_G      , RGB_M_T      , RGB_M_TW     , _______      , _______      ,
+    RGB_RMOD     , RGB_HUD      , RGB_SAD      , RGB_VAD      , _______      , _______      ,                                 CPI_D1K      , CPI_D100     , CPI_I100     , CPI_I1K      , KBC_SAVE     , KBC_RST      ,
+    _______      , _______      , SCRL_DVD     , SCRL_DVI     , SCRL_MO      , SCRL_TO      , EE_CLR       ,   EE_CLR       , KC_HOME      , KC_PGDN      , KC_PGUP      , KC_END       , _______      , _______      ,
+    QK_BOOT      , _______      , KC_LEFT      , KC_DOWN      , KC_UP        , KC_RGHT      , _______      ,   _______      , KC_DEL       , _______      , _______      , _______      , _______      , QK_BOOT
 ),
 
+// Layer 4: Gaming. Toggled via TG(4).
 [4] = LAYOUT_universal(
-    KC_ESC   , KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                                  KC_6     , KC_7     , KC_8     , KC_9     , KC_0     , KC_GRV   ,
-    KC_TAB   , KC_Q     , KC_W     , KC_E     , KC_R     , _______  ,                                  _______  , KC_LEFT  , KC_UP    , KC_RGHT  , _______  , KC_F12   ,
-    KC_LCTL  , KC_A     , KC_S     , KC_D     , KC_F     , _______  ,                                  KC_PGUP  , KC_BTN1  , KC_DOWN  , KC_BTN2  , KC_BTN3  , _______  ,
-    KC_LSFT  , KC_Z     , KC_X     , KC_C     , KC_V     , _______  , _______  ,            _______   , KC_PGDN  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , KC_SPC   , _______  , _______  , _______  ,            KC_DEL    , CPI_D1K  , CPI_D100 , CPI_I100 , CPI_I1K  , _______  , TG(4)
-),
-
-[5] = LAYOUT_universal(
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______
+    KC_ESC       , KC_1         , KC_2         , KC_3         , KC_4         , KC_5         ,                                 KC_6         , KC_7         , KC_8         , KC_9         , KC_0         , KC_GRV       ,
+    KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , _______      ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
+    KC_LCTL      , KC_A         , KC_S         , KC_D         , KC_F         , _______      ,                                 KC_PGUP      , KC_BTN1      , KC_DOWN      , KC_BTN2      , KC_BTN3      , _______      ,
+    KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , _______      , _______      ,   _______      , KC_PGDN      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , KC_SPC       , _______      , _______      , _______      ,   KC_DEL       , CPI_D1K      , CPI_D100     , CPI_I100     , CPI_I1K      , _______      , TG(4)
 ),
 
 [6] = LAYOUT_universal(
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______
 ),
 
 [7] = LAYOUT_universal(
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,                                  _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  , _______  , _______  ,            _______   , _______  , _______  , _______  , _______  , _______  , _______
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______
 ),
 };
 // clang-format on
@@ -318,20 +320,21 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
         pimoroni_left_set_rgbw(0, 0, 0, 0); // LED off with the rest of the RGB
         return;
     }
+    // Colors match the cheatsheet per-layer accents. Base layer (0) keeps the
+    // LED off so the trackball is dark during normal typing.
     switch (layer) {
-        case 1: pimoroni_left_set_rgbw(0, 200, 200, 15); break; // Symbols - cyan
-        case 2: pimoroni_left_set_rgbw(0, 255, 50, 15);  break; // Media    - bright green
-        case 3: pimoroni_left_set_rgbw(255, 150, 0, 15); break; // Settings - orange
-        case 4: pimoroni_left_set_rgbw(255, 50, 0, 15);  break; // Gaming   - red
-        case 5: pimoroni_left_set_rgbw(200, 0, 200, 15); break; // Trading  - purple
-        case 0: pimoroni_left_set_rgbw(0, 100, 255, 10); break; // Scroll   - blue
-        default: pimoroni_left_set_rgbw(0, 255, 100, 10); break; // Mouse   - green
+        case 0: pimoroni_left_set_rgbw(0, 0, 0, 0);        break; // L0 base    - off
+        case 1: pimoroni_left_set_rgbw(57, 217, 138, 10);  break; // L1 nav     - green  #39d98a
+        case 2: pimoroni_left_set_rgbw(0, 220, 220, 10);   break; // L2 window-mgmt - cyan
+        case 3: pimoroni_left_set_rgbw(255, 157, 51, 10);  break; // L3 settings - orange #ff9d33
+        case 4: pimoroni_left_set_rgbw(255, 77, 77, 10);   break; // L4 gaming  - red    #ff4d4d
+        default: pimoroni_left_set_rgbw(0, 0, 0, 0);       break; // off
     }
 }
 
 // Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
-    // Auto enable scroll mode when the highest layer is 3
+    // Auto enable scroll mode on the Settings layer (now layer 3).
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
 
     pimoroni_apply_layer_color(get_highest_layer(state));

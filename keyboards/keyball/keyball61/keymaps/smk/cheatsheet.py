@@ -13,11 +13,11 @@ W, H = 1080, 1920
 
 # Per-layer accent colors (match the Pimoroni LED scheme where it applies).
 LAYERS = [
-    {"n": 0, "name": "BASE",     "sub": "QWERTY • left ball = scroll", "accent": "#3da5ff"},
-    {"n": 1, "name": "SHIFT",    "sub": "LT(1) hold • shifted base",    "accent": "#9d6bff"},
-    {"n": 2, "name": "NAV / NUM","sub": "LT(2) hold / TG(2)",            "accent": "#39d98a"},
-    {"n": 3, "name": "SETTINGS", "sub": "LT(3) hold • RGB / CPI / boot", "accent": "#ff9d33"},
-    {"n": 4, "name": "GAMING",   "sub": "TG(4) • dedicated left hand",   "accent": "#ff4d4d"},
+    {"n": 0, "name": "BASE",      "sub": "QWERTY • left ball = scroll",      "accent": "#3da5ff"},
+    {"n": 1, "name": "NAV / NUM", "sub": "hold L-thumb (Spc) • MO3 settings", "accent": "#39d98a"},
+    {"n": 2, "name": "WINDOW MGMT","sub": "hold R-thumb (Ent) • Ctrl+Opt+key", "accent": "#22d3d3"},
+    {"n": 3, "name": "SETTINGS",  "sub": "MO(3) on Nav • RGB / CPI / boot",   "accent": "#ff9d33"},
+    {"n": 4, "name": "GAMING",    "sub": "TG(4) • dedicated left hand",       "accent": "#ff4d4d"},
 ]
 
 # Keycode -> display label. Friendly, compact glyphs for a wallpaper.
@@ -41,7 +41,13 @@ LABELS = {
     "KBC_SAVE": "Save", "KBC_RST": "Rst", "EE_CLR": "EECLR", "QK_BOOT": "BOOT",
     "SCRL_MO": "Scrl", "SCRL_TO": "ScrlT", "SCRL_DVD": "SDv-", "SCRL_DVI": "SDv+",
     "SSNP_FRE": "Snap0", "SSNP_VRT": "SnapV", "SSNP_HOR": "SnapH",
-    "TG(2)": "TG2", "TG(4)": "TG4",
+    "TG(1)": "TG1", "TG(2)": "TG2", "TG(4)": "TG4", "MO(3)": "MO3",
+    "KC_RSFT": "Shft",
+    # Window-management (Ctrl+Opt+key) friendly labels.
+    "WM(KC_LEFT)": "◧", "WM(KC_RGHT)": "◨", "WM(KC_UP)": "⬓", "WM(KC_DOWN)": "⬒",
+    "WM(KC_U)": "◰", "WM(KC_I)": "◳", "WM(KC_J)": "◱", "WM(KC_K)": "◲",
+    "WM(KC_D)": "⅓L", "WM(KC_F)": "⅓C", "WM(KC_G)": "⅓R",
+    "WM(KC_E)": "⅔L", "WM(KC_T)": "⅔R",
 }
 
 def label(kc):
@@ -72,27 +78,31 @@ def label(kc):
 # Keymap rows per layer: list of 5 rows; each row = (left_keys, right_keys).
 # Transcribed from keymap.c LAYOUT_universal (layers 0-4).
 KEYMAP = {
+# L0 Base
 0: [
   (["KC_GRV","KC_1","KC_2","KC_3","KC_4","KC_5"], ["KC_6","KC_7","KC_8","KC_9","KC_0","KC_MINS"]),
   (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","KC_T"], ["KC_Y","KC_U","KC_I","KC_O","KC_P","KC_EQL"]),
-  (["KC_CAPS","KC_A","KC_S","KC_D","KC_F","KC_G"], ["KC_H","KC_J","KC_K","KC_L","KC_SCLN","LT(1,KC_ENT)"]),
-  (["LT(1,KC_LSFT)","KC_Z","KC_X","KC_C","KC_V","KC_B","KC_LBRC"], ["KC_RBRC","KC_N","KC_M","KC_COMM","KC_DOT","KC_SLSH","KC_QUOT"]),
-  (["KC_LCTL","KC_LALT","KC_LEFT","KC_UP","KC_LGUI","LT(2,KC_SPC)","LT(3,KC_ESC)"], ["LT(3,KC_BSPC)","LT(2,KC_SPC)","_______","_______","_______","TG(2)","KC_BSLS"]),
+  (["KC_CAPS","KC_A","KC_S","KC_D","KC_F","KC_G"], ["KC_H","KC_J","KC_K","KC_L","KC_SCLN","KC_ENT"]),
+  (["KC_LSFT","KC_Z","KC_X","KC_C","KC_V","KC_B","KC_LBRC"], ["KC_RBRC","KC_N","KC_M","KC_COMM","KC_DOT","KC_SLSH","KC_RSFT"]),
+  (["KC_LCTL","KC_LALT","_______","_______","KC_LGUI","LT(1,KC_SPC)","KC_ESC"], ["KC_BSPC","LT(2,KC_ENT)","_______","_______","_______","TG(1)","KC_BSLS"]),
 ],
+# L1 Nav / Num
 1: [
-  (["S(KC_GRV)","S(KC_1)","S(KC_2)","S(KC_3)","S(KC_4)","S(KC_5)"], ["S(KC_6)","S(KC_7)","S(KC_8)","S(KC_9)","S(KC_0)","S(KC_MINS)"]),
-  (["S(KC_TAB)","S(KC_Q)","S(KC_W)","S(KC_E)","S(KC_R)","S(KC_T)"], ["S(KC_Y)","S(KC_U)","S(KC_I)","S(KC_O)","S(KC_P)","S(KC_EQL)"]),
-  (["_______","S(KC_A)","S(KC_S)","S(KC_D)","S(KC_F)","S(KC_G)"], ["S(KC_H)","S(KC_J)","S(KC_K)","S(KC_L)","S(KC_SCLN)","_______"]),
-  (["_______","S(KC_Z)","S(KC_X)","S(KC_C)","S(KC_V)","S(KC_B)","S(KC_LBRC)"], ["S(KC_RBRC)","S(KC_N)","S(KC_M)","S(KC_COMM)","S(KC_DOT)","S(KC_SLSH)","S(KC_QUOT)"]),
-  (["_______","_______","_______","_______","_______","_______","_______"], ["_______","_______","_______","_______","_______","_______","S(KC_BSLS)"]),
-],
-2: [
   (["SSNP_FRE","KC_F1","KC_F2","KC_F3","KC_F4","KC_F5"], ["KC_F6","KC_F7","KC_F8","KC_F9","KC_F10","KC_F11"]),
   (["SSNP_VRT","_______","KC_7","KC_8","KC_9","_______"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
   (["SSNP_HOR","_______","KC_4","KC_5","KC_6","S(KC_SCLN)"], ["KC_PGUP","KC_BTN1","KC_DOWN","KC_BTN2","KC_BTN3","_______"]),
   (["_______","_______","KC_1","KC_2","KC_3","S(KC_MINS)","S(KC_8)"], ["S(KC_9)","KC_PGDN","_______","_______","_______","_______","_______"]),
-  (["_______","_______","KC_0","KC_DOT","_______","_______","SCRL_MO"], ["_______","_______","_______","_______","_______","TG(2)","TG(4)"]),
+  (["_______","MO(3)","KC_0","KC_DOT","_______","_______","SCRL_MO"], ["_______","_______","_______","_______","_______","TG(1)","TG(4)"]),
 ],
+# L2 Window management (Ctrl+Opt+key)
+2: [
+  (["_______","_______","_______","_______","_______","_______"], ["_______","_______","_______","_______","_______","_______"]),
+  (["_______","_______","_______","WM(KC_E)","_______","WM(KC_T)"], ["_______","WM(KC_U)","WM(KC_I)","_______","_______","_______"]),
+  (["_______","_______","_______","WM(KC_D)","WM(KC_F)","WM(KC_G)"], ["_______","WM(KC_J)","WM(KC_K)","_______","_______","_______"]),
+  (["_______","_______","_______","_______","_______","_______","_______"], ["_______","WM(KC_LEFT)","WM(KC_DOWN)","WM(KC_UP)","WM(KC_RGHT)","_______","_______"]),
+  (["_______","_______","_______","_______","_______","_______","_______"], ["_______","_______","_______","_______","_______","_______","_______"]),
+],
+# L3 Settings
 3: [
   (["RGB_TOG","AML_TO","AML_I50","AML_D50","_______","_______"], ["RGB_M_P","RGB_M_B","RGB_M_R","RGB_M_SW","RGB_M_SN","RGB_M_K"]),
   (["RGB_MOD","RGB_HUI","RGB_SAI","RGB_VAI","_______","_______"], ["RGB_M_X","RGB_M_G","RGB_M_T","RGB_M_TW","_______","_______"]),
@@ -100,6 +110,7 @@ KEYMAP = {
   (["_______","_______","SCRL_DVD","SCRL_DVI","SCRL_MO","SCRL_TO","EE_CLR"], ["EE_CLR","KC_HOME","KC_PGDN","KC_PGUP","KC_END","_______","_______"]),
   (["QK_BOOT","_______","KC_LEFT","KC_DOWN","KC_UP","KC_RGHT","_______"], ["_______","KC_DEL","_______","_______","_______","_______","QK_BOOT"]),
 ],
+# L4 Gaming
 4: [
   (["KC_ESC","KC_1","KC_2","KC_3","KC_4","KC_5"], ["KC_6","KC_7","KC_8","KC_9","KC_0","KC_GRV"]),
   (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","_______"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
@@ -111,8 +122,9 @@ KEYMAP = {
 
 # A key is "modified" (LT/TG/special) for accent highlight.
 def is_special(kc):
-    return kc.startswith("LT(") or kc.startswith("TG(") or kc in (
-        "SCRL_MO","SCRL_TO","QK_BOOT","EE_CLR","KBC_SAVE","KBC_RST")
+    return (kc.startswith("LT(") or kc.startswith("TG(") or kc.startswith("MO(")
+            or kc.startswith("WM(") or kc in (
+        "SCRL_MO","SCRL_TO","QK_BOOT","EE_CLR","KBC_SAVE","KBC_RST"))
 
 def esc(s):
     return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")

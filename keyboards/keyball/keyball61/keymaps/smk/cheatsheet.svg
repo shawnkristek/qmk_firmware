@@ -77,12 +77,10 @@
 <text x="718.0" y="299.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">L</text>
 <rect x="742.0" y="280.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="761.0" y="304.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">;</text>
-<rect x="785.0" y="280.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="804.0" y="299.5" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">Enter</text>
-<text x="804.0" y="312.5" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L1</text>
-<rect x="201.0" y="323.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="220.0" y="342.5" text-anchor="middle" font-size="11" fill="#3da5ff" font-family="Menlo,monospace">Shft</text>
-<text x="220.0" y="355.5" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L1</text>
+<rect x="785.0" y="280.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="804.0" y="304.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">Enter</text>
+<rect x="201.0" y="323.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="220.0" y="347.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Shft</text>
 <rect x="244.0" y="323.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="263.0" y="347.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">Z</text>
 <rect x="287.0" y="318.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
@@ -108,156 +106,146 @@
 <rect x="742.0" y="323.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="761.0" y="347.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">/</text>
 <rect x="785.0" y="323.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="347.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">'</text>
+<text x="804.0" y="347.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Shft</text>
 <rect x="201.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="220.0" y="390.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Ctrl</text>
 <rect x="244.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="263.0" y="390.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Alt</text>
 <rect x="287.0" y="361.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="385.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
 <rect x="330.0" y="354.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="378.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
 <rect x="374.3" y="372.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="393.3" y="396.9" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Gui</text>
 <g transform="rotate(9.00 437.6 396.7)">
 <rect x="418.6" y="377.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
 <text x="437.6" y="396.7" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
-<text x="437.6" y="409.7" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
+<text x="437.6" y="409.7" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L1</text>
 </g>
 <g transform="rotate(18.00 483.2 405.3)">
-<rect x="464.2" y="386.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="483.2" y="405.3" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Esc</text>
-<text x="483.2" y="418.3" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
+<rect x="464.2" y="386.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="483.2" y="410.3" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Esc</text>
 </g>
 <g transform="rotate(-18.00 543.9 405.3)">
-<rect x="524.9" y="386.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="543.9" y="405.3" text-anchor="middle" font-size="11" fill="#3da5ff" font-family="Menlo,monospace">Bksp</text>
-<text x="543.9" y="418.3" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L3</text>
+<rect x="524.9" y="386.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="543.9" y="410.3" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Bksp</text>
 </g>
 <g transform="rotate(-9.00 591.1 396.7)">
 <rect x="572.1" y="377.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="591.1" y="396.7" text-anchor="middle" font-size="14" fill="#3da5ff" font-family="Menlo,monospace">Spc</text>
+<text x="591.1" y="396.7" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">Enter</text>
 <text x="591.1" y="409.7" text-anchor="middle" font-size="9" fill="#3da5ff" font-family="Menlo,monospace">L2</text>
 </g>
 <rect x="742.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#3da5ff" stroke-width="1.2"/>
-<text x="761.0" y="390.5" text-anchor="middle" font-size="12" fill="#3da5ff" font-family="Menlo,monospace">TG2</text>
+<text x="761.0" y="390.5" text-anchor="middle" font-size="12" fill="#3da5ff" font-family="Menlo,monospace">TG1</text>
 <rect x="785.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="804.0" y="390.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">\</text>
 <circle cx="705.8" cy="391.8" r="31.2" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
 <circle cx="705.8" cy="391.8" r="19.3" fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>
 <circle cx="482.6" cy="245.2" r="22.8" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
 <circle cx="482.6" cy="245.2" r="14.1" fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>
-<rect x="36" y="459" width="1008" height="343" rx="10" fill="#11141a" stroke="#9d6bff" stroke-width="1.4" opacity="0.95"/>
-<rect x="36" y="459" width="6" height="343" rx="3" fill="#9d6bff"/>
-<text x="58" y="487" font-size="22" fill="#9d6bff" font-family="Menlo,monospace" font-weight="bold">L1 · SHIFT</text>
-<text x="58" y="507" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">LT(1) hold • shifted base</text>
+<rect x="36" y="459" width="1008" height="343" rx="10" fill="#11141a" stroke="#39d98a" stroke-width="1.4" opacity="0.95"/>
+<rect x="36" y="459" width="6" height="343" rx="3" fill="#39d98a"/>
+<text x="58" y="487" font-size="22" fill="#39d98a" font-family="Menlo,monospace" font-weight="bold">L1 · NAV / NUM</text>
+<text x="58" y="507" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">hold L-thumb (Spc) • MO3 settings</text>
 <rect x="201.0" y="551.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="220.0" y="575.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">`</text>
+<text x="220.0" y="575.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">Snap0</text>
 <rect x="244.0" y="551.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="263.0" y="575.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">1</text>
+<text x="263.0" y="575.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F1</text>
 <rect x="287.0" y="546.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="570.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">2</text>
+<text x="306.0" y="570.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F2</text>
 <rect x="330.0" y="539.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="563.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">3</text>
+<text x="349.0" y="563.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F3</text>
 <rect x="373.0" y="548.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="572.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">4</text>
+<text x="392.0" y="572.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F4</text>
 <rect x="416.0" y="559.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="583.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">5</text>
+<text x="435.0" y="583.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F5</text>
 <rect x="570.0" y="559.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="583.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">6</text>
+<text x="589.0" y="583.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F6</text>
 <rect x="613.0" y="548.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="572.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">7</text>
+<text x="632.0" y="572.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F7</text>
 <rect x="656.0" y="539.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="563.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">8</text>
+<text x="675.0" y="563.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F8</text>
 <rect x="699.0" y="546.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="570.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
+<text x="718.0" y="570.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F9</text>
 <rect x="742.0" y="551.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="575.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">0</text>
+<text x="761.0" y="575.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F10</text>
 <rect x="785.0" y="551.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="575.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">-</text>
+<text x="804.0" y="575.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F11</text>
 <rect x="201.0" y="594.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="220.0" y="618.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Tab</text>
+<text x="220.0" y="618.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">SnapV</text>
 <rect x="244.0" y="594.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="263.0" y="618.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">Q</text>
 <rect x="287.0" y="589.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="613.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">W</text>
+<text x="306.0" y="613.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">7</text>
 <rect x="330.0" y="582.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="606.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">E</text>
+<text x="349.0" y="606.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">8</text>
 <rect x="373.0" y="591.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">R</text>
+<text x="392.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
 <rect x="416.0" y="602.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="626.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">T</text>
 <rect x="570.0" y="602.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="626.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">Y</text>
 <rect x="613.0" y="591.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">U</text>
+<text x="632.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
 <rect x="656.0" y="582.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="606.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">I</text>
+<text x="675.0" y="606.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
 <rect x="699.0" y="589.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="613.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">O</text>
+<text x="718.0" y="613.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">→</text>
 <rect x="742.0" y="594.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="618.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">P</text>
 <rect x="785.0" y="594.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="618.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">=</text>
+<text x="804.0" y="618.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F12</text>
 <rect x="201.0" y="637.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="220.0" y="661.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">SnapH</text>
 <rect x="244.0" y="637.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="263.0" y="661.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">A</text>
 <rect x="287.0" y="632.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="656.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">S</text>
+<text x="306.0" y="656.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">4</text>
 <rect x="330.0" y="625.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="649.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">D</text>
+<text x="349.0" y="649.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">5</text>
 <rect x="373.0" y="634.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="658.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F</text>
+<text x="392.0" y="658.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">6</text>
 <rect x="416.0" y="645.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="669.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">G</text>
+<text x="435.0" y="669.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">;</text>
 <rect x="570.0" y="645.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="669.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">H</text>
+<text x="589.0" y="669.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">PgUp</text>
 <rect x="613.0" y="634.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="658.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">J</text>
+<text x="632.0" y="658.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M1</text>
 <rect x="656.0" y="625.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="649.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">K</text>
+<text x="675.0" y="649.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↓</text>
 <rect x="699.0" y="632.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="656.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">L</text>
+<text x="718.0" y="656.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M2</text>
 <rect x="742.0" y="637.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="661.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">;</text>
+<text x="761.0" y="661.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M3</text>
 <rect x="785.0" y="637.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="201.0" y="680.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="244.0" y="680.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="263.0" y="704.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">Z</text>
 <rect x="287.0" y="675.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="699.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">X</text>
+<text x="306.0" y="699.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">1</text>
 <rect x="330.0" y="668.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="692.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">C</text>
+<text x="349.0" y="692.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">2</text>
 <rect x="373.0" y="677.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="701.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">V</text>
+<text x="392.0" y="701.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">3</text>
 <rect x="416.0" y="688.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="712.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">B</text>
+<text x="435.0" y="712.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">-</text>
 <rect x="459.0" y="694.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="478.0" y="718.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">[</text>
+<text x="478.0" y="718.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">8</text>
 <rect x="527.0" y="694.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="546.0" y="718.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">]</text>
+<text x="546.0" y="718.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
 <rect x="570.0" y="688.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="712.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">N</text>
+<text x="589.0" y="712.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">PgDn</text>
 <rect x="613.0" y="677.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="701.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M</text>
 <rect x="656.0" y="668.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="692.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">,</text>
 <rect x="699.0" y="675.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="699.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">.</text>
 <rect x="742.0" y="680.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="704.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">/</text>
 <rect x="785.0" y="680.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="704.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">'</text>
 <rect x="201.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<rect x="244.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="244.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
+<text x="263.0" y="747.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">MO3</text>
 <rect x="287.0" y="718.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="306.0" y="742.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">0</text>
 <rect x="330.0" y="711.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="349.0" y="735.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">.</text>
 <rect x="374.3" y="730.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <g transform="rotate(9.00 437.6 753.7)">
 <rect x="418.6" y="734.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
 <g transform="rotate(18.00 483.2 762.3)">
-<rect x="464.2" y="743.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="464.2" y="743.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
+<text x="483.2" y="767.3" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">Scrl</text>
 </g>
 <g transform="rotate(-18.00 543.9 762.3)">
 <rect x="524.9" y="743.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
@@ -265,117 +253,91 @@
 <g transform="rotate(-9.00 591.1 753.7)">
 <rect x="572.1" y="734.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="742.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<rect x="785.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="747.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">\</text>
+<rect x="742.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
+<text x="761.0" y="747.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">TG1</text>
+<rect x="785.0" y="723.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
+<text x="804.0" y="747.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">TG4</text>
 <circle cx="705.8" cy="748.8" r="31.2" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
 <circle cx="705.8" cy="748.8" r="19.3" fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>
 <circle cx="482.6" cy="602.2" r="22.8" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
 <circle cx="482.6" cy="602.2" r="14.1" fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>
-<rect x="36" y="816" width="1008" height="343" rx="10" fill="#11141a" stroke="#39d98a" stroke-width="1.4" opacity="0.95"/>
-<rect x="36" y="816" width="6" height="343" rx="3" fill="#39d98a"/>
-<text x="58" y="844" font-size="22" fill="#39d98a" font-family="Menlo,monospace" font-weight="bold">L2 · NAV / NUM</text>
-<text x="58" y="864" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">LT(2) hold / TG(2)</text>
+<rect x="36" y="816" width="1008" height="343" rx="10" fill="#11141a" stroke="#22d3d3" stroke-width="1.4" opacity="0.95"/>
+<rect x="36" y="816" width="6" height="343" rx="3" fill="#22d3d3"/>
+<text x="58" y="844" font-size="22" fill="#22d3d3" font-family="Menlo,monospace" font-weight="bold">L2 · WINDOW MGMT</text>
+<text x="58" y="864" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">hold R-thumb (Ent) • Ctrl+Opt+key</text>
 <rect x="201.0" y="908.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="220.0" y="932.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">Snap0</text>
 <rect x="244.0" y="908.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="263.0" y="932.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F1</text>
 <rect x="287.0" y="903.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="927.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F2</text>
 <rect x="330.0" y="896.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="920.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F3</text>
 <rect x="373.0" y="905.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="929.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F4</text>
 <rect x="416.0" y="916.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="940.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F5</text>
 <rect x="570.0" y="916.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="940.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F6</text>
 <rect x="613.0" y="905.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="929.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F7</text>
 <rect x="656.0" y="896.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="920.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F8</text>
 <rect x="699.0" y="903.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="927.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">F9</text>
 <rect x="742.0" y="908.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="932.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F10</text>
 <rect x="785.0" y="908.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="932.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F11</text>
 <rect x="201.0" y="951.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="220.0" y="975.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">SnapV</text>
 <rect x="244.0" y="951.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="287.0" y="946.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="970.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">7</text>
-<rect x="330.0" y="939.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="963.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">8</text>
+<rect x="330.0" y="939.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="349.0" y="963.5" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⅔L</text>
 <rect x="373.0" y="948.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="972.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
-<rect x="416.0" y="959.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="416.0" y="959.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="435.0" y="983.2" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⅔R</text>
 <rect x="570.0" y="959.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<rect x="613.0" y="948.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="972.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
-<rect x="656.0" y="939.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="963.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↑</text>
+<rect x="613.0" y="948.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="632.0" y="972.9" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◰</text>
+<rect x="656.0" y="939.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="675.0" y="963.5" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◳</text>
 <rect x="699.0" y="946.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="970.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">→</text>
 <rect x="742.0" y="951.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="785.0" y="951.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="804.0" y="975.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">F12</text>
 <rect x="201.0" y="994.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="220.0" y="1018.5" text-anchor="middle" font-size="9" fill="#c9d1d9" font-family="Menlo,monospace">SnapH</text>
 <rect x="244.0" y="994.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="287.0" y="989.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="1013.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">4</text>
-<rect x="330.0" y="982.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="1006.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">5</text>
-<rect x="373.0" y="991.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="1015.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">6</text>
-<rect x="416.0" y="1002.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="1026.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">;</text>
+<rect x="330.0" y="982.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="349.0" y="1006.5" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⅓L</text>
+<rect x="373.0" y="991.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="392.0" y="1015.9" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⅓C</text>
+<rect x="416.0" y="1002.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="435.0" y="1026.2" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⅓R</text>
 <rect x="570.0" y="1002.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="1026.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">PgUp</text>
-<rect x="613.0" y="991.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="632.0" y="1015.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M1</text>
-<rect x="656.0" y="982.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="675.0" y="1006.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">↓</text>
+<rect x="613.0" y="991.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="632.0" y="1015.9" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◱</text>
+<rect x="656.0" y="982.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="675.0" y="1006.5" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◲</text>
 <rect x="699.0" y="989.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="718.0" y="1013.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M2</text>
 <rect x="742.0" y="994.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="761.0" y="1018.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">M3</text>
 <rect x="785.0" y="994.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="201.0" y="1037.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="244.0" y="1037.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="287.0" y="1032.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="1056.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">1</text>
 <rect x="330.0" y="1025.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="1049.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">2</text>
 <rect x="373.0" y="1034.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="392.0" y="1058.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">3</text>
 <rect x="416.0" y="1045.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="435.0" y="1069.2" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">-</text>
 <rect x="459.0" y="1051.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="478.0" y="1075.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">8</text>
 <rect x="527.0" y="1051.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="546.0" y="1075.7" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
-<rect x="570.0" y="1045.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="589.0" y="1069.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">PgDn</text>
-<rect x="613.0" y="1034.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<rect x="656.0" y="1025.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<rect x="699.0" y="1032.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="570.0" y="1045.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="589.0" y="1069.2" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◧</text>
+<rect x="613.0" y="1034.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="632.0" y="1058.9" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⬒</text>
+<rect x="656.0" y="1025.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="675.0" y="1049.5" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">⬓</text>
+<rect x="699.0" y="1032.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#22d3d3" stroke-width="1.2"/>
+<text x="718.0" y="1056.3" text-anchor="middle" font-size="15" fill="#22d3d3" font-family="Menlo,monospace">◨</text>
 <rect x="742.0" y="1037.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="785.0" y="1037.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="201.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="244.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="287.0" y="1075.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="306.0" y="1099.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">0</text>
 <rect x="330.0" y="1068.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
-<text x="349.0" y="1092.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">.</text>
 <rect x="374.3" y="1087.0" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <g transform="rotate(9.00 437.6 1110.7)">
 <rect x="418.6" y="1091.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
 <g transform="rotate(18.00 483.2 1119.3)">
-<rect x="464.2" y="1100.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
-<text x="483.2" y="1124.3" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">Scrl</text>
+<rect x="464.2" y="1100.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
 <g transform="rotate(-18.00 543.9 1119.3)">
 <rect x="524.9" y="1100.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
@@ -383,10 +345,8 @@
 <g transform="rotate(-9.00 591.1 1110.7)">
 <rect x="572.1" y="1091.7" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 </g>
-<rect x="742.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
-<text x="761.0" y="1104.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">TG2</text>
-<rect x="785.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#39d98a" stroke-width="1.2"/>
-<text x="804.0" y="1104.5" text-anchor="middle" font-size="12" fill="#39d98a" font-family="Menlo,monospace">TG4</text>
+<rect x="742.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<rect x="785.0" y="1080.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <circle cx="705.8" cy="1105.8" r="31.2" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
 <circle cx="705.8" cy="1105.8" r="19.3" fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>
 <circle cx="482.6" cy="959.2" r="22.8" fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>
@@ -394,7 +354,7 @@
 <rect x="36" y="1173" width="1008" height="343" rx="10" fill="#11141a" stroke="#ff9d33" stroke-width="1.4" opacity="0.95"/>
 <rect x="36" y="1173" width="6" height="343" rx="3" fill="#ff9d33"/>
 <text x="58" y="1201" font-size="22" fill="#ff9d33" font-family="Menlo,monospace" font-weight="bold">L3 · SETTINGS</text>
-<text x="58" y="1221" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">LT(3) hold • RGB / CPI / boot</text>
+<text x="58" y="1221" font-size="12.5" fill="#8b949e" font-family="Menlo,monospace">MO(3) on Nav • RGB / CPI / boot</text>
 <rect x="201.0" y="1265.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="220.0" y="1289.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">RGB</text>
 <rect x="244.0" y="1265.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
