@@ -23,15 +23,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Dual trackball support
 #include "lib/keyball/keyball.h"
 
-// Custom split transaction carrying Pimoroni scroll/click to the master.
-#include "transactions.h"
-#include "pimoroni_split.h"
-
 // Forward declarations for Pimoroni trackball integration
 void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
+
+// Scroll/click computed from one Pimoroni read.
+typedef struct {
+    int16_t h;
+    int16_t v;
+    uint8_t click;
+} pimoroni_scroll_t;
 
 // Window-management helper: emit Ctrl+Opt+<key> for Rectangle shortcuts.
 #define WM(kc) LCTL(LALT(kc))
@@ -129,11 +132,9 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-// Read the Pimoroni once and turn it into a scroll/click payload. The Pimoroni's
-// motion registers are read-and-clear, so this MUST be the only place the ball
-// is read each cycle. Whichever half physically has the ball calls this; the
-// result is then either applied locally (ball on master) or shipped to the
-// master over the split RPC (ball on slave).
+// Read the Pimoroni once and turn it into a scroll/click payload. Read-and-clear
+// registers, so this is the single read per cycle. With USB on the LEFT half the
+// Pimoroni is on the master and this runs locally -- no split transport needed.
 static pimoroni_scroll_t pimoroni_compute_scroll(void) {
     static int16_t scroll_acc_v = 0;
     static int16_t scroll_acc_h = 0;
@@ -176,32 +177,11 @@ static pimoroni_scroll_t pimoroni_compute_scroll(void) {
     return out;
 }
 
-// Latest Pimoroni payload, ready for the master to apply to its mouse report.
-// On the slave this is filled by the RPC handler; on the master it is filled
-// either by the RPC invoke (ball on slave) or directly (ball on master).
-static pimoroni_scroll_t pimoroni_latest = {0, 0, 0};
-
-// Lights state, shared source of truth for "everything dark" (auto-sleep on
-// idle, or the manual all-off key). The master decides it and syncs it to the
-// slave via the RPC request payload, since the slave can't read RGB/idle state
-// reliably on its own.
+// Lights state: "everything dark" (auto-sleep on idle, or the manual all-off
+// key). The Pimoroni is on the master half (USB left), so all of this is local.
 static bool     lights_off    = false;
 static uint32_t last_activity = 0;       // timer of last key/pointer activity
 #define LIGHTS_SLEEP_MS 300000            // 5 minutes idle -> lights off
-
-#ifdef SPLIT_KEYBOARD
-// Slave side: the master sends lights_off in the request; we store it, then
-// return the current Pimoroni scroll/click. (Layer comes via the normal
-// SPLIT_LAYER_STATE sync, so it is not in the request.)
-static void pimoroni_get_scroll_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
-    if (in_data != NULL && in_buflen >= sizeof(pimoroni_req_t)) {
-        const pimoroni_req_t *req = (const pimoroni_req_t *)in_data;
-        lights_off = req->lights_off;
-    }
-    pimoroni_scroll_t s = pimoroni_compute_scroll();
-    *(pimoroni_scroll_t *)out_data = s;
-}
-#endif
 
 // Apply the current lights_off state to the Pimoroni LED, OLED, and RGB.
 // Safe to call every cycle; it only writes when the state changes.
@@ -231,40 +211,31 @@ static void apply_lights(void) {
     pimoroni_apply_layer_color(get_highest_layer(layer_state));
 }
 
-// Register the slave-side Pimoroni RPC handler.
 void keyboard_post_init_user(void) {
     last_activity = timer_read32();  // don't sleep immediately at boot
-#ifdef SPLIT_KEYBOARD
-    // Only the slave answers RPCs. The Pimoroni lives on the left half, so the
-    // handler matters when the left is the slave (USB on the right).
-    if (!is_keyboard_master()) {
-        transaction_register_rpc(PIMORONI_GET_SCROLL, pimoroni_get_scroll_handler);
-    }
-#endif
 }
 
-// Apply the latest Pimoroni payload to the outgoing mouse report. Runs on the
-// master so the data actually reaches the host.
+// Read the Pimoroni locally on the half that has it and inject scroll/click.
+// With USB on the left, that half is the master, so this reaches the host
+// directly -- no split transport for the Pimoroni.
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     static bool last_click_state = false;
 
-    if (is_keyboard_master()) {
-        // If the ball is on THIS (master) half, read it directly. Otherwise the
-        // payload was already pulled from the slave in housekeeping_task_user.
-        if (is_keyboard_left()) {
-            pimoroni_latest = pimoroni_compute_scroll();
+    if (is_keyboard_left()) {
+        pimoroni_scroll_t s = pimoroni_compute_scroll();
+
+        // Trackball use counts as activity (wake the lights / reset sleep).
+        if (s.h || s.v || s.click) {
+            last_activity = timer_read32();
+            lights_off    = false;
         }
 
-        // Inject scroll, then consume it so the same delta is not re-applied on
-        // the next report (which would scroll forever). New motion accumulates
-        // into pimoroni_latest between reports via the local read / RPC poll.
-        mouse_report.h = pimoroni_latest.h;
-        mouse_report.v = pimoroni_latest.v;
-        pimoroni_latest.h = 0;
-        pimoroni_latest.v = 0;
+        // Scroll wheel (cursor x/y left untouched; the PMW3360 drives those).
+        mouse_report.h = s.h;
+        mouse_report.v = s.v;
 
         // Edge-detect the click so we set/clear the button cleanly.
-        bool current_click_state = (pimoroni_latest.click != 0);
+        bool current_click_state = (s.click != 0);
         if (current_click_state != last_click_state) {
             if (current_click_state) {
                 mouse_report.buttons |= MOUSE_BTN1; // Left mouse button
@@ -273,18 +244,13 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
             }
             last_click_state = current_click_state;
         } else if (current_click_state) {
-            // Hold the button while pressed across reports.
-            mouse_report.buttons |= MOUSE_BTN1;
+            mouse_report.buttons |= MOUSE_BTN1; // hold across reports
         }
     }
 
     return mouse_report;
 }
 
-// Master side: pull the Pimoroni scroll/click from the slave every few ms so
-// pointing_device_task_kb has fresh data to inject. Only needed when the ball
-// is on the OTHER half (i.e. left is the slave). When the ball is on the master
-// itself, pointing_device_task_kb reads it directly and this is skipped.
 // Any keypress counts as activity: reset the idle timer and wake the lights.
 // The LIGHTS keycode manually toggles everything off/on.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -325,33 +291,6 @@ void housekeeping_task_user(void) {
         last_off   = (int8_t)lights_off;
         pimoroni_apply_layer_color(cur_layer);
     }
-
-#ifdef SPLIT_KEYBOARD
-    // ---- Master <-> slave sync every few ms -------------------------------
-    if (is_keyboard_master() && !is_keyboard_left()) {
-        static uint32_t last_sync = 0;
-        uint32_t        now       = timer_read32();
-        if (TIMER_DIFF_32(now, last_sync) < 4) {
-            return;
-        }
-        last_sync = now;
-
-        pimoroni_req_t    req  = { .lights_off = lights_off,
-                                   .layer      = get_highest_layer(layer_state) };
-        pimoroni_scroll_t recv = {0, 0, 0};
-        if (transaction_rpc_exec(PIMORONI_GET_SCROLL, sizeof(req), &req, sizeof(recv), &recv)) {
-            // Accumulate scroll so deltas are never lost if the pointing task
-            // has not consumed the previous poll yet. Click is a level.
-            pimoroni_latest.h     += recv.h;
-            pimoroni_latest.v     += recv.v;
-            pimoroni_latest.click = recv.click;
-            if (recv.h || recv.v || recv.click) {
-                last_activity = timer_read32(); // trackball counts as activity
-                lights_off    = false;
-            }
-        }
-    }
-#endif
 }
 
 // Enhanced OLED rendering for dual trackball

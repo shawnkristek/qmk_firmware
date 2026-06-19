@@ -20,6 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Pimoroni trackball configuration for left half
 static bool pimoroni_initialized = false;
+// Hard failure cutoff: a disconnected/dead Pimoroni makes every I2C read time
+// out, which stalls the whole main loop (laggy typing). After this many
+// consecutive failures we give up entirely so the keyboard stays responsive.
+#define PIMORONI_FAIL_LIMIT 20
+static uint8_t pimoroni_fail_count = 0;
 
 // Initialize Pimoroni trackball on left half
 void pimoroni_left_init(void) {
@@ -40,8 +45,14 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click) {
     pimoroni_data_t data;
     i2c_status_t status = read_pimoroni_trackball(&data);
     if (status != I2C_STATUS_SUCCESS) {
+        if (++pimoroni_fail_count >= PIMORONI_FAIL_LIMIT) {
+            // Give up: disable the Pimoroni so its dead I2C stops stalling the
+            // main loop. Stays off until the next reboot.
+            pimoroni_initialized = false;
+        }
         return false;
     }
+    pimoroni_fail_count = 0;  // a good read resets the counter
 
     // Threshold the RAW directional counts before the squaring conversion.
     // The Pimoroni reports a small steady idle imbalance (e.g. right=1, left=0)
