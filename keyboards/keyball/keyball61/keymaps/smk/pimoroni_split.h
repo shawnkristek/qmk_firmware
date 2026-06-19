@@ -21,3 +21,11 @@ typedef struct __attribute__((packed)) {
     int16_t v;      // vertical scroll delta (already divided/tuned)
     uint8_t click;  // nonzero while the ball is pressed
 } pimoroni_scroll_t;
+
+// Payload sent from master to slave with the RPC request, so the slave learns
+// the master-decided state (lights_off for sleep/all-off, and current layer)
+// that it can't reliably read itself.
+typedef struct __attribute__((packed)) {
+    uint8_t lights_off; // 1 = blank RGB/OLED/Pimoroni
+    uint8_t layer;      // current highest layer
+} pimoroni_req_t;

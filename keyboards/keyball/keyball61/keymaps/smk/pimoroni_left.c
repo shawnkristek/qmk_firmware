@@ -23,49 +23,11 @@ static bool pimoroni_initialized = false;
 
 // Initialize Pimoroni trackball on left half
 void pimoroni_left_init(void) {
-    // Always try to initialize - it will only work on the half with Pimoroni hardware
-
-    dprintf("Pimoroni: Starting initialization on %s side\n", is_keyboard_left() ? "left" : "right");
-
-    // Initialize I2C and Pimoroni trackball
+    // Always try to initialize - it only works on the half with the hardware.
     i2c_init();
-
-    // Initialize Pimoroni trackball with error handling
     pimoroni_trackball_device_init();
-    dprintf("Pimoroni: Device init completed\n");
-
-    // Set initial RGBW color (bright red for initialization feedback)
-    pimoroni_trackball_set_rgbw(255, 0, 0, 0);
-    wait_ms(500);  // Wait 500ms to show red
-
-    // Change to subtle white to indicate successful init
-    pimoroni_trackball_set_rgbw(20, 20, 20, 10);
-
     pimoroni_initialized = true;
-    dprintf("Pimoroni: Initialization completed successfully\n");
-
-    // Test: Run a quick rainbow cycle to verify LED control works
-    if (is_keyboard_left()) {
-        dprintf("Pimoroni: Running rainbow test on left half\n");
-
-        // Red
-        pimoroni_trackball_set_rgbw(255, 0, 0, 0);
-        wait_ms(200);
-
-        // Green
-        pimoroni_trackball_set_rgbw(0, 255, 0, 0);
-        wait_ms(200);
-
-        // Blue
-        pimoroni_trackball_set_rgbw(0, 0, 255, 0);
-        wait_ms(200);
-
-        // White
-        pimoroni_trackball_set_rgbw(50, 50, 50, 20);
-        wait_ms(200);
-
-        dprintf("Pimoroni: Rainbow test completed\n");
-    }
+    pimoroni_trackball_set_rgbw(0, 0, 0, 0); // start dark; layer/lights drive it
 }
 
 // Read Pimoroni trackball and convert to keyball motion format
@@ -81,27 +43,27 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click) {
         return false;
     }
 
+    // Threshold the RAW directional counts before the squaring conversion.
+    // The Pimoroni reports a small steady idle imbalance (e.g. right=1, left=0)
+    // which get_offsets() squares and scales into perpetual scroll once it is
+    // integrated by the accumulator. Require a difference of >1 count in a
+    // direction for it to register at all; this kills idle drift at the source
+    // without touching real movement (a deliberate roll produces several counts).
+    int16_t dx_raw = (int16_t)data.right - (int16_t)data.left;
+    int16_t dy_raw = (int16_t)data.down  - (int16_t)data.up;
+    if (dx_raw > -2 && dx_raw < 2) { data.right = 0; data.left = 0; }
+    if (dy_raw > -2 && dy_raw < 2) { data.down  = 0; data.up   = 0; }
+
     // Convert to keyball motion format
     *x = pimoroni_trackball_get_offsets(data.right, data.left, 3);  // Scale factor 3
     *y = pimoroni_trackball_get_offsets(data.down, data.up, 3);    // Scale factor 3
     *click = data.click;
-
-    // Debug output
-    static uint16_t debug_counter = 0;
-    debug_counter++;
-    if (debug_counter % 100 == 0) { // Print every 100th reading to avoid spam
-        dprintf("Pimoroni: Read motion - x=%d, y=%d, click=%d, status=%d\n", *x, *y, *click, status);
-    }
-
     return true;
 }
 
 // Set RGBW color for Pimoroni trackball
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
     if (pimoroni_initialized) {
-        dprintf("Pimoroni: Setting RGBW to R=%d, G=%d, B=%d, W=%d\n", r, g, b, w);
         pimoroni_trackball_set_rgbw(r, g, b, w);
-    } else {
-        dprintf("Pimoroni: Cannot set RGBW - not initialized\n");
     }
 }

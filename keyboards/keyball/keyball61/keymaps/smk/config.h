@@ -20,6 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+// Handedness: the stock keyball uses SPLIT_HAND_MATRIX_GRID on GP26 x GP6,
+// but GP26 is also a matrix column -- that sharing makes the GP26-column keys
+// (e.g. the inner right thumb [9,7]) scan unreliably. Switch to EE_HANDS so
+// GP26 is a clean matrix column. Each half's handedness is written to EEPROM
+// by flashing with `uf2-split-left` / `uf2-split-right`.
+#undef SPLIT_HAND_MATRIX_GRID
+#undef SPLIT_HAND_MATRIX_GRID_LOW_IS_LEFT
+#define EE_HANDS
+
+// Sync layer + RGB state to the slave so the left-half Pimoroni LED can react
+// to layer changes and the RGB on/off toggle (it lives on the slave half).
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_LED_STATE_ENABLE
+
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_EFFECT_BREATHING
 #    define RGBLIGHT_EFFECT_RAINBOW_MOOD
@@ -34,6 +48,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #define TAP_CODE_DELAY 5
+
+// Tap/hold tuning for the layer-tap thumb keys (Space=LT1, backslash=LT2) so
+// quick taps register instantly instead of waiting out the hold decision.
+#define TAPPING_TERM 150        // shorter window to decide tap vs hold
+#define PERMISSIVE_HOLD         // hold fires only if another key is pressed during the hold
+#define QUICK_TAP_TERM 0        // disable auto-repeat-on-hold; tap-then-hold = two taps
 
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 1
