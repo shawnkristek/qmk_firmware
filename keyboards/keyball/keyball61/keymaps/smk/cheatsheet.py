@@ -13,11 +13,12 @@ W, H = 1080, 1920
 
 # Per-layer accent colors (match the Pimoroni LED scheme where it applies).
 LAYERS = [
-    {"n": 0, "name": "BASE",      "sub": "QWERTY • left ball = scroll",      "accent": "#3da5ff"},
-    {"n": 1, "name": "NAV / NUM", "sub": "hold L-thumb (Spc) • MO3 settings", "accent": "#39d98a"},
-    {"n": 2, "name": "WINDOW MGMT","sub": "hold R-thumb (Ent) • Ctrl+Opt+key", "accent": "#22d3d3"},
-    {"n": 3, "name": "SETTINGS",  "sub": "MO(3) on Nav • RGB / CPI / boot",   "accent": "#ff9d33"},
-    {"n": 4, "name": "GAMING",    "sub": "TG(4) • dedicated left hand",       "accent": "#ff4d4d"},
+    # `ball` = the Pimoroni trackball LED color on that layer (None = off).
+    {"n": 0, "name": "BASE",      "sub": "QWERTY • left ball = scroll",      "accent": "#3da5ff", "ball": None},
+    {"n": 1, "name": "NAV / NUM", "sub": "MO1 / hold Spc • MO3=settings • Lite=all-off", "accent": "#39d98a", "ball": "#39d98a"},
+    {"n": 2, "name": "WINDOW MGMT","sub": "hold R-thumb (Ent) • Ctrl+Opt+key", "accent": "#22d3d3", "ball": "#00dcdc"},
+    {"n": 3, "name": "SETTINGS",  "sub": "MO(3) on Nav • RGB / CPI / boot",   "accent": "#ff9d33", "ball": "#ff9d33"},
+    {"n": 4, "name": "GAMING",    "sub": "TG(4) • dedicated left hand",       "accent": "#ff4d4d", "ball": "#ff4d4d"},
 ]
 
 # Keycode -> display label. Friendly, compact glyphs for a wallpaper.
@@ -41,8 +42,8 @@ LABELS = {
     "KBC_SAVE": "Save", "KBC_RST": "Rst", "EE_CLR": "EECLR", "QK_BOOT": "BOOT",
     "SCRL_MO": "Scrl", "SCRL_TO": "ScrlT", "SCRL_DVD": "SDv-", "SCRL_DVI": "SDv+",
     "SSNP_FRE": "Snap0", "SSNP_VRT": "SnapV", "SSNP_HOR": "SnapH",
-    "TG(1)": "TG1", "TG(2)": "TG2", "TG(4)": "TG4", "MO(3)": "MO3",
-    "KC_RSFT": "Shft",
+    "TG(1)": "TG1", "TG(2)": "TG2", "TG(4)": "TG4", "MO(3)": "MO3", "MO(1)": "MO1",
+    "KC_RSFT": "Shft", "LIGHTS": "Lite",
     # Window-management (Ctrl+Opt+key) friendly labels.
     "WM(KC_LEFT)": "◧", "WM(KC_RGHT)": "◨", "WM(KC_UP)": "⬓", "WM(KC_DOWN)": "⬒",
     "WM(KC_U)": "◰", "WM(KC_I)": "◳", "WM(KC_J)": "◱", "WM(KC_K)": "◲",
@@ -83,8 +84,8 @@ KEYMAP = {
   (["KC_GRV","KC_1","KC_2","KC_3","KC_4","KC_5"], ["KC_6","KC_7","KC_8","KC_9","KC_0","KC_MINS"]),
   (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","KC_T"], ["KC_Y","KC_U","KC_I","KC_O","KC_P","KC_EQL"]),
   (["KC_CAPS","KC_A","KC_S","KC_D","KC_F","KC_G"], ["KC_H","KC_J","KC_K","KC_L","KC_SCLN","KC_ENT"]),
-  (["KC_LSFT","KC_Z","KC_X","KC_C","KC_V","KC_B","KC_LBRC"], ["KC_RBRC","KC_N","KC_M","KC_COMM","KC_DOT","KC_SLSH","KC_RSFT"]),
-  (["KC_LCTL","KC_LALT","_______","_______","KC_LGUI","LT(1,KC_SPC)","KC_ESC"], ["KC_BSPC","KC_BTN1","_______","_______","_______","TG(1)","LT(2,KC_BSLS)"]),
+  (["KC_LSFT","KC_Z","KC_X","KC_C","KC_V","KC_B","KC_LBRC"], ["KC_RBRC","KC_N","KC_M","KC_COMM","KC_DOT","KC_SLSH","KC_QUOT"]),
+  (["KC_LCTL","KC_LALT","_______","_______","KC_LGUI","LT(1,KC_SPC)","KC_ESC"], ["KC_BSPC","KC_RSFT","_______","_______","_______","MO(1)","LT(2,KC_BSLS)"]),
 ],
 # L1 Nav / Num
 1: [
@@ -104,7 +105,7 @@ KEYMAP = {
 ],
 # L3 Settings
 3: [
-  (["RGB_TOG","AML_TO","AML_I50","AML_D50","_______","_______"], ["RGB_M_P","RGB_M_B","RGB_M_R","RGB_M_SW","RGB_M_SN","RGB_M_K"]),
+  (["LIGHTS","AML_TO","AML_I50","AML_D50","_______","_______"], ["RGB_M_P","RGB_M_B","RGB_M_R","RGB_M_SW","RGB_M_SN","RGB_M_K"]),
   (["RGB_MOD","RGB_HUI","RGB_SAI","RGB_VAI","_______","_______"], ["RGB_M_X","RGB_M_G","RGB_M_T","RGB_M_TW","_______","_______"]),
   (["RGB_RMOD","RGB_HUD","RGB_SAD","RGB_VAD","_______","_______"], ["CPI_D1K","CPI_D100","CPI_I100","CPI_I1K","KBC_SAVE","KBC_RST"]),
   (["_______","_______","SCRL_DVD","SCRL_DVI","SCRL_MO","SCRL_TO","EE_CLR"], ["EE_CLR","KC_HOME","KC_PGDN","KC_PGUP","KC_END","_______","_______"]),
@@ -124,7 +125,7 @@ KEYMAP = {
 def is_special(kc):
     return (kc.startswith("LT(") or kc.startswith("TG(") or kc.startswith("MO(")
             or kc.startswith("WM(") or kc in (
-        "SCRL_MO","SCRL_TO","QK_BOOT","EE_CLR","KBC_SAVE","KBC_RST"))
+        "SCRL_MO","SCRL_TO","QK_BOOT","EE_CLR","KBC_SAVE","KBC_RST","LIGHTS"))
 
 def esc(s):
     return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
@@ -294,16 +295,40 @@ def render_half(keys, x0, y0, accent, parts, right=False, row_idx=0):
                 col = i - 1        # 4, 5
                 place(col, rstag[col], 0.0, keys[i])
     return
-def draw_key(kx, ky, kc, accent, parts, rot=0.0):
-    """Draw one key box + label at absolute (kx, ky), optionally rotated."""
-    key_rect(kx, ky, KEY, label(kc), accent, is_special(kc), parts, rot)
+# Destination-layer color for a layer-switch key (TG/MO/LT/DF -> layer N).
+# Layer-switch keys are tinted with the color of the layer they activate,
+# rather than the current layer's accent.
+_LAYER_COLOR = {n: L["accent"] for n, L in {l["n"]: l for l in LAYERS}.items()}
+def layer_switch_color(kc):
+    import re as _re
+    m = _re.match(r'(?:TG|MO|TO|DF)\((\d+)\)', kc)
+    if not m:
+        m = _re.match(r'LT\((\d+),', kc)
+    if m:
+        return _LAYER_COLOR.get(int(m.group(1)))
+    return None
 
-def draw_ball(cx, cy, r, color, name, parts):
-    """Draw a trackball as a ringed circle in the same gray as the key boxes."""
+def draw_key(kx, ky, kc, accent, parts, rot=0.0):
+    """Draw one key box + label at absolute (kx, ky), optionally rotated.
+    Layer-switch keys are tinted with their destination layer's color."""
+    dest = layer_switch_color(kc)
+    key_rect(kx, ky, KEY, label(kc), dest if dest else accent, is_special(kc), parts, rot)
+
+def draw_ball(cx, cy, r, glow, name, parts):
+    """Draw a trackball as a ringed circle. `glow` is the LED color the ball
+    shows on this layer (None = LED off / no LED -> neutral gray)."""
+    if glow:
+        fill   = glow
+        stroke = glow
+        inner  = "#11141a"   # dark inner ring reads against the glow fill
+    else:
+        fill   = "#1c1f26"   # neutral gray, same as key boxes (LED off)
+        stroke = "#363b45"
+        inner  = "#363b45"
     parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
-                 f'fill="#1c1f26" stroke="#363b45" stroke-width="1.6"/>')
+                 f'fill="{fill}" stroke="{stroke}" stroke-width="1.6"/>')
     parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r*0.62:.1f}" '
-                 f'fill="none" stroke="#363b45" stroke-width="1" opacity="0.7"/>')
+                 f'fill="none" stroke="{inner}" stroke-width="1" opacity="0.7"/>')
 
 def build_svg():
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">']
@@ -359,13 +384,14 @@ def build_svg():
         pmw_r  = KEY*0.82
         pmw_cx = rx0 + 4.0*U - KGAP - pmw_r              # right edge KGAP left of col 4
         pmw_cy = grid_y + 4.0*ROW_H + KEY/2 + 1.25*KGAP  # row-4 centre, nudged down ~1.25 gaps
-        draw_ball(pmw_cx, pmw_cy, pmw_r, "#ff8a3d", "PMW3360", parts)
+        draw_ball(pmw_cx, pmw_cy, pmw_r, None, "PMW3360", parts)  # PMW3360 has no LED
         # Left Pimoroni small ball: right of the inner column, its vertical
         # centre level with the TOP edge of the T key (row 1, inner column).
+        # Filled with the LED color this layer shows (None on base = off).
         t_top = grid_y + 1*ROW_H + COL_STAGGER[5]*U
         pim_cx = kb_x0 + 6.55*U
         pim_cy = t_top
-        draw_ball(pim_cx, pim_cy, KEY*0.6, accent, "Pimoroni", parts)
+        draw_ball(pim_cx, pim_cy, KEY*0.6, layer.get("ball"), "Pimoroni", parts)
 
     parts.append('</svg>')
     return "\n".join(parts)
