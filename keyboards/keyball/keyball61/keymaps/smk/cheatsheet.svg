@@ -112,7 +112,9 @@
 <rect x="244.0" y="366.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="263.0" y="390.5" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Alt</text>
 <rect x="287.0" y="361.3" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="306.0" y="385.3" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
 <rect x="330.0" y="354.5" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="349.0" y="378.5" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">→</text>
 <rect x="374.3" y="372.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="393.3" y="396.9" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Gui</text>
 <g transform="rotate(9.00 437.6 396.7)">
@@ -179,6 +181,7 @@
 <rect x="373.0" y="591.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="392.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">9</text>
 <rect x="416.0" y="602.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="435.0" y="626.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Ptr</text>
 <rect x="570.0" y="602.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="613.0" y="591.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="632.0" y="615.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>
@@ -512,6 +515,7 @@
 <rect x="373.0" y="1662.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="392.0" y="1686.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">R</text>
 <rect x="416.0" y="1673.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
+<text x="435.0" y="1697.2" text-anchor="middle" font-size="12" fill="#c9d1d9" font-family="Menlo,monospace">Ptr</text>
 <rect x="570.0" y="1673.2" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <rect x="613.0" y="1662.9" width="38.0" height="38.0" rx="5" fill="#1c1f26" stroke="#363b45" stroke-width="1.2"/>
 <text x="632.0" y="1686.9" text-anchor="middle" font-size="15" fill="#c9d1d9" font-family="Menlo,monospace">←</text>

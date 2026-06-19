@@ -43,7 +43,7 @@ LABELS = {
     "SCRL_MO": "Scrl", "SCRL_TO": "ScrlT", "SCRL_DVD": "SDv-", "SCRL_DVI": "SDv+",
     "SSNP_FRE": "Snap0", "SSNP_VRT": "SnapV", "SSNP_HOR": "SnapH",
     "TG(1)": "TG1", "TG(2)": "TG2", "TG(4)": "TG4", "MO(3)": "MO3", "MO(1)": "MO1",
-    "KC_RSFT": "Shft", "LIGHTS": "Lite",
+    "KC_RSFT": "Shft", "LIGHTS": "Lite", "PIM_MODE": "Ptr",
     # Window-management (Ctrl+Opt+key) friendly labels.
     "WM(KC_LEFT)": "◧", "WM(KC_RGHT)": "◨", "WM(KC_UP)": "⬓", "WM(KC_DOWN)": "⬒",
     "WM(KC_U)": "◰", "WM(KC_I)": "◳", "WM(KC_J)": "◱", "WM(KC_K)": "◲",
@@ -85,12 +85,12 @@ KEYMAP = {
   (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","KC_T"], ["KC_Y","KC_U","KC_I","KC_O","KC_P","KC_EQL"]),
   (["KC_CAPS","KC_A","KC_S","KC_D","KC_F","KC_G"], ["KC_H","KC_J","KC_K","KC_L","KC_SCLN","KC_ENT"]),
   (["KC_LSFT","KC_Z","KC_X","KC_C","KC_V","KC_B","KC_LBRC"], ["KC_RBRC","KC_N","KC_M","KC_COMM","KC_DOT","KC_SLSH","KC_QUOT"]),
-  (["KC_LCTL","KC_LALT","_______","_______","KC_LGUI","LT(1,KC_SPC)","KC_ESC"], ["KC_BSPC","KC_RSFT","_______","_______","_______","MO(1)","LT(2,KC_BSLS)"]),
+  (["KC_LCTL","KC_LALT","KC_LEFT","KC_RIGHT","KC_LGUI","LT(1,KC_SPC)","KC_ESC"], ["KC_BSPC","KC_RSFT","_______","_______","_______","MO(1)","LT(2,KC_BSLS)"]),
 ],
 # L1 Nav / Num
 1: [
   (["SSNP_FRE","KC_F1","KC_F2","KC_F3","KC_F4","KC_F5"], ["KC_F6","KC_F7","KC_F8","KC_F9","KC_F10","KC_F11"]),
-  (["SSNP_VRT","_______","KC_7","KC_8","KC_9","_______"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
+  (["SSNP_VRT","_______","KC_7","KC_8","KC_9","PIM_MODE"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
   (["SSNP_HOR","_______","KC_4","KC_5","KC_6","S(KC_SCLN)"], ["KC_PGUP","KC_BTN1","KC_DOWN","KC_BTN2","KC_BTN3","_______"]),
   (["_______","_______","KC_1","KC_2","KC_3","S(KC_MINS)","S(KC_8)"], ["S(KC_9)","KC_PGDN","_______","_______","_______","_______","_______"]),
   (["TG(4)","MO(3)","KC_0","KC_DOT","_______","_______","SCRL_MO"], ["_______","_______","_______","_______","_______","_______","TG(1)"]),
@@ -114,7 +114,7 @@ KEYMAP = {
 # L4 Gaming
 4: [
   (["KC_ESC","KC_1","KC_2","KC_3","KC_4","KC_5"], ["KC_6","KC_7","KC_8","KC_9","KC_0","KC_GRV"]),
-  (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","_______"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
+  (["KC_TAB","KC_Q","KC_W","KC_E","KC_R","PIM_MODE"], ["_______","KC_LEFT","KC_UP","KC_RGHT","_______","KC_F12"]),
   (["KC_LCTL","KC_A","KC_S","KC_D","KC_F","_______"], ["KC_PGUP","KC_BTN1","KC_DOWN","KC_BTN2","KC_BTN3","_______"]),
   (["KC_LSFT","KC_Z","KC_X","KC_C","KC_V","_______","_______"], ["KC_PGDN","_______","_______","_______","_______","_______","_______"]),
   (["TG(4)","_______","_______","KC_SPC","_______","_______","_______"], ["KC_DEL","CPI_D1K","CPI_D100","CPI_I100","CPI_I1K","_______","TG(1)"]),
