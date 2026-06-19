@@ -20,11 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Pimoroni trackball configuration for left half
 static bool pimoroni_initialized = false;
-// Hard failure cutoff: a disconnected/dead Pimoroni makes every I2C read time
-// out, which stalls the whole main loop (laggy typing). After this many
-// consecutive failures we give up entirely so the keyboard stays responsive.
+// A flaky/disconnected Pimoroni makes every I2C read time out, stalling the
+// main loop (laggy typing). After this many consecutive failures we BACK OFF:
+// stop reading for a window so typing stays fast, then periodically retry with
+// a bus re-init so it recovers on its own when the connection comes back (no
+// power-cycle needed).
 #define PIMORONI_FAIL_LIMIT 20
-static uint8_t pimoroni_fail_count = 0;
+#define PIMORONI_RETRY_MS   1000
+static uint8_t  pimoroni_fail_count = 0;
+static bool     pimoroni_backoff    = false;
+static uint16_t pimoroni_retry_at   = 0;
 
 // Initialize Pimoroni trackball on left half
 void pimoroni_left_init(void) {
@@ -41,29 +46,35 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click) {
         return false;
     }
 
+    // While backing off (the ball went unresponsive), skip reads so a dead I2C
+    // doesn't stall typing. Once PIMORONI_RETRY_MS passes, re-init the bus and
+    // try again -- recovers automatically when the connection returns.
+    if (pimoroni_backoff) {
+        if (timer_elapsed(pimoroni_retry_at) < PIMORONI_RETRY_MS) {
+            return false;
+        }
+        i2c_init();                 // attempt bus recovery
+        pimoroni_backoff   = false;
+        pimoroni_fail_count = 0;
+    }
+
     // Read Pimoroni trackball data
     pimoroni_data_t data;
     i2c_status_t status = read_pimoroni_trackball(&data);
     if (status != I2C_STATUS_SUCCESS) {
         if (++pimoroni_fail_count >= PIMORONI_FAIL_LIMIT) {
-            // Give up: disable the Pimoroni so its dead I2C stops stalling the
-            // main loop. Stays off until the next reboot.
-            pimoroni_initialized = false;
+            // Enter backoff: pause reads for a while, then retry (see top).
+            pimoroni_backoff = true;
+            pimoroni_retry_at = timer_read();
         }
         return false;
     }
     pimoroni_fail_count = 0;  // a good read resets the counter
 
-    // Threshold the RAW directional counts before the squaring conversion.
-    // The Pimoroni reports a small steady idle imbalance (e.g. right=1, left=0)
-    // which get_offsets() squares and scales into perpetual scroll once it is
-    // integrated by the accumulator. Require a difference of >1 count in a
-    // direction for it to register at all; this kills idle drift at the source
-    // without touching real movement (a deliberate roll produces several counts).
-    int16_t dx_raw = (int16_t)data.right - (int16_t)data.left;
-    int16_t dy_raw = (int16_t)data.down  - (int16_t)data.up;
-    if (dx_raw > -2 && dx_raw < 2) { data.right = 0; data.left = 0; }
-    if (dy_raw > -2 && dy_raw < 2) { data.down  = 0; data.up   = 0; }
+    // Note: no raw dead-zone here. Slow rolls produce small (magnitude-1)
+    // counts, and zeroing those made slow scrolling not register. Idle drift is
+    // instead handled by the accumulator decay in pimoroni_compute_scroll
+    // (which tells transient movement from a persistent idle bias).
 
     // Convert to keyball motion format
     *x = pimoroni_trackball_get_offsets(data.right, data.left, 3);  // Scale factor 3

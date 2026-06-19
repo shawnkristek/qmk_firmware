@@ -55,8 +55,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PERMISSIVE_HOLD         // hold fires only if another key is pressed during the hold
 #define QUICK_TAP_TERM 0        // disable auto-repeat-on-hold; tap-then-hold = two taps
 
-#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
-#define AUTO_MOUSE_DEFAULT_LAYER 1
+// Auto-mouse-layer is disabled: with the Pimoroni in cursor mode it would
+// activate a layer on every pointer motion, and the resulting rapid layer
+// changes re-write the Pimoroni LED over I2C, which wedges the (flaky) bus and
+// freezes the trackball. We switch modes explicitly via PIM_MODE instead.
+// #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+// #define AUTO_MOUSE_DEFAULT_LAYER 1
 
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
 

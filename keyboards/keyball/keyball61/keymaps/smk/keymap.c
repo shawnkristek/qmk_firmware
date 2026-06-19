@@ -29,20 +29,30 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
 
-// Scroll/click computed from one Pimoroni read.
+// Motion/click computed from one Pimoroni read. h/v = scroll, x/y = cursor
+// (only one pair is nonzero depending on mode).
 typedef struct {
     int16_t h;
     int16_t v;
+    int16_t x;
+    int16_t y;
     uint8_t click;
 } pimoroni_scroll_t;
 
 // Window-management helper: emit Ctrl+Opt+<key> for Rectangle shortcuts.
 #define WM(kc) LCTL(LALT(kc))
 
-// Custom keycodes. LIGHTS = manual all-off toggle (RGB + OLED + Pimoroni).
+// Custom keycodes.
+//   LIGHTS   = manual all-off toggle (RGB + OLED + Pimoroni)
+//   PIM_MODE = toggle the Pimoroni between scroll-wheel and cursor (sticky)
 enum custom_keycodes {
     LIGHTS = QK_USER,
+    PIM_MODE,
 };
+
+// When true the Pimoroni acts as a cursor (second pointer) instead of a scroll
+// wheel. Toggled by PIM_MODE.
+static bool pimoroni_cursor_mode = false;
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -51,13 +61,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , KC_T         ,                                 KC_Y         , KC_U         , KC_I         , KC_O         , KC_P         , KC_EQL       ,
     KC_CAPS      , KC_A         , KC_S         , KC_D         , KC_F         , KC_G         ,                                 KC_H         , KC_J         , KC_K         , KC_L         , KC_SCLN      , KC_ENT       ,
     KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , KC_B         , KC_LBRC      ,   KC_RBRC      , KC_N         , KC_M         , KC_COMM      , KC_DOT       , KC_SLSH      , KC_QUOT      ,
-    KC_LCTL      , KC_LALT      , _______      , _______      , KC_LGUI      , LT(1,KC_SPC) , KC_ESC       ,   KC_BSPC      , KC_RSFT      , _______      , _______      , _______      , MO(1)        , LT(2,KC_BSLS)
+    KC_LCTL      , KC_LALT      , KC_LEFT      , KC_RIGHT     , KC_LGUI      , LT(1,KC_SPC) , KC_ESC       ,   KC_BSPC      , KC_RSFT      , _______      , _______      , _______      , MO(1)        , LT(2,KC_BSLS)
 ),
 
 // Layer 1: Nav / Num. Hold left thumb (Space). MO(3) reaches Settings.
 [1] = LAYOUT_universal(
     SSNP_FRE     , KC_F1        , KC_F2        , KC_F3        , KC_F4        , KC_F5        ,                                 KC_F6        , KC_F7        , KC_F8        , KC_F9        , KC_F10       , KC_F11       ,
-    SSNP_VRT     , _______      , KC_7         , KC_8         , KC_9         , _______      ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
+    SSNP_VRT     , _______      , KC_7         , KC_8         , KC_9         , PIM_MODE     ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
     SSNP_HOR     , _______      , KC_4         , KC_5         , KC_6         , S(KC_SCLN)   ,                                 KC_PGUP      , KC_BTN1      , KC_DOWN      , KC_BTN2      , KC_BTN3      , _______      ,
     _______      , _______      , KC_1         , KC_2         , KC_3         , S(KC_MINS)   , S(KC_8)      ,   S(KC_9)      , KC_PGDN      , _______      , _______      , _______      , _______      , _______      ,
     TG(4)        , MO(3)        , KC_0         , KC_DOT       , _______      , _______      , SCRL_MO      ,   _______      , _______      , _______      , _______      , _______      , _______      , TG(1)
@@ -87,7 +97,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Layer 4: Gaming. Toggled via TG(4).
 [4] = LAYOUT_universal(
     KC_ESC       , KC_1         , KC_2         , KC_3         , KC_4         , KC_5         ,                                 KC_6         , KC_7         , KC_8         , KC_9         , KC_0         , KC_GRV       ,
-    KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , _______      ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
+    KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , PIM_MODE     ,                                 _______      , KC_LEFT      , KC_UP        , KC_RGHT      , _______      , KC_F12       ,
     KC_LCTL      , KC_A         , KC_S         , KC_D         , KC_F         , _______      ,                                 KC_PGUP      , KC_BTN1      , KC_DOWN      , KC_BTN2      , KC_BTN3      , _______      ,
     KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , _______      , _______      ,   _______      , KC_PGDN      , _______      , _______      , _______      , _______      , _______      ,
     TG(4)        , _______      , _______      , KC_SPC       , _______      , _______      , _______      ,   KC_DEL       , CPI_D1K      , CPI_D100     , CPI_I100     , CPI_I1K      , _______      , TG(1)
@@ -138,9 +148,10 @@ void keyboard_pre_init_kb(void) {
 static pimoroni_scroll_t pimoroni_compute_scroll(void) {
     static int16_t scroll_acc_v = 0;
     static int16_t scroll_acc_h = 0;
-    const int16_t  SCROLL_DIVISOR = 8;
+    // Lower = more responsive/faster scroll (fewer accumulated units per tick).
+    const int16_t  SCROLL_DIVISOR = 4;
 
-    pimoroni_scroll_t out = {0, 0, 0};
+    pimoroni_scroll_t out = {0, 0, 0, 0, 0};
 
     int16_t x, y;
     uint8_t click;
@@ -150,20 +161,36 @@ static pimoroni_scroll_t pimoroni_compute_scroll(void) {
 
     out.click = click;
 
-    // Layer 0 = dedicated scroll wheel. On other layers the ball is idle for
-    // now (cursor work is done by the right-hand PMW3360).
+    // Cursor mode (toggled by PIM_MODE): act as a second pointer. Send motion
+    // as x/y, which sums with the right PMW3360 into one cursor. The raw offset
+    // is small (tuned for scroll detents), so scale it UP for usable cursor
+    // speed. Bump CURSOR_GAIN to taste.
+    if (pimoroni_cursor_mode) {
+        const int16_t CURSOR_GAIN = 3;
+        out.x = (int16_t)(-y * CURSOR_GAIN);  // ball rotated 90deg: horizontal -> x
+        out.y = (int16_t)(x * CURSOR_GAIN);   // vertical -> y
+        return out;
+    }
+
+    // Otherwise: scroll wheel on the base layer (idle elsewhere; cursor work is
+    // done by the right-hand PMW3360).
     if (get_highest_layer(layer_state) == 0) {
+        static uint8_t idle_reads = 0;
         if (x == 0 && y == 0) {
-            // No movement this read: drop any leftover remainder so a tiny
-            // residual bias can never integrate into perpetual drift.
-            scroll_acc_v = 0;
-            scroll_acc_h = 0;
+            // Only clear the accumulator after SUSTAINED idle, not a single
+            // zero read -- slow rolls have zero reads interspersed, and wiping
+            // on every one of them stopped slow scrolling from registering.
+            // A persistent idle bias still decays to zero (kills drift); brief
+            // gaps mid-roll keep their accumulation.
+            if (++idle_reads >= 8) {
+                scroll_acc_v = 0;
+                scroll_acc_h = 0;
+            }
         } else {
+            idle_reads = 0;
             // Trackball is mounted rotated 90deg, so the ball's x axis is
-            // physical up/down -> drive vertical scroll from x. Deltas come out
-            // fast (one detent ~= 3) because the driver squares the offset, so
-            // accumulate and emit one tick per SCROLL_DIVISOR units; small
-            // movements are kept (not dropped as integer division would).
+            // physical up/down -> drive vertical scroll from x. Accumulate and
+            // emit one tick per SCROLL_DIVISOR units; small movements are kept.
             scroll_acc_v += -x;
             scroll_acc_h += y;
 
@@ -225,14 +252,22 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
         pimoroni_scroll_t s = pimoroni_compute_scroll();
 
         // Trackball use counts as activity (wake the lights / reset sleep).
-        if (s.h || s.v || s.click) {
+        if (s.h || s.v || s.x || s.y || s.click) {
             last_activity = timer_read32();
             lights_off    = false;
         }
 
-        // Scroll wheel (cursor x/y left untouched; the PMW3360 drives those).
+        // Scroll mode -> h/v; cursor mode -> add x/y so it sums with the
+        // PMW3360 into one pointer (second cursor). Clamp the sum to the report
+        // range so it never overflows.
         mouse_report.h = s.h;
         mouse_report.v = s.v;
+        int16_t nx = (int16_t)mouse_report.x + s.x;
+        int16_t ny = (int16_t)mouse_report.y + s.y;
+        if (nx > 127) nx = 127; else if (nx < -127) nx = -127;
+        if (ny > 127) ny = 127; else if (ny < -127) ny = -127;
+        mouse_report.x = (mouse_xy_report_t)nx;
+        mouse_report.y = (mouse_xy_report_t)ny;
 
         // Edge-detect the click so we set/clear the button cleanly.
         bool current_click_state = (s.click != 0);
@@ -260,6 +295,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             lights_off = !lights_off;
             return false; // consume the key
         }
+        if (keycode == PIM_MODE) {
+            pimoroni_cursor_mode = !pimoroni_cursor_mode;
+            // Don't touch the LED (I2C) here -- doing an I2C write inside the
+            // keypress handler can stall/wedge a flaky bus. housekeeping picks
+            // up the change and updates the LED safely.
+            return false;
+        }
         // Any other key wakes the lights if they were sleeping.
         if (lights_off) {
             lights_off = false;
@@ -285,10 +327,13 @@ void housekeeping_task_user(void) {
     // scroll down with it). Only write when the layer or lights state changes.
     static uint8_t last_layer = 0xFF;
     static int8_t  last_off   = -1;
+    static int8_t  last_cur   = -1;
     uint8_t cur_layer = get_highest_layer(layer_state);
-    if (cur_layer != last_layer || (int8_t)lights_off != last_off) {
+    if (cur_layer != last_layer || (int8_t)lights_off != last_off
+        || (int8_t)pimoroni_cursor_mode != last_cur) {
         last_layer = cur_layer;
         last_off   = (int8_t)lights_off;
+        last_cur   = (int8_t)pimoroni_cursor_mode;
         pimoroni_apply_layer_color(cur_layer);
     }
 }
@@ -328,6 +373,13 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
     }
     if (lights_off) {
         pimoroni_left_set_rgbw(0, 0, 0, 0);
+        return;
+    }
+    // Base layer: white when the Pimoroni is in cursor mode (visual cue),
+    // otherwise dark. Cursor mode shows only on the base layer; other layers
+    // keep their normal colors.
+    if (layer == 0 && pimoroni_cursor_mode) {
+        pimoroni_left_set_rgbw(80, 80, 80, 30);
         return;
     }
     // Colors match the cheatsheet per-layer accents. Base layer (0) keeps the
