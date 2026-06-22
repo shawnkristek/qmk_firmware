@@ -28,6 +28,7 @@ void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
+static void apply_underglow_color(uint8_t layer);
 
 // Motion/click computed from one Pimoroni read. h/v = scroll, x/y = cursor
 // (only one pair is nonzero depending on mode).
@@ -61,7 +62,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB       , KC_Q         , KC_W         , KC_E         , KC_R         , KC_T         ,                                 KC_Y         , KC_U         , KC_I         , KC_O         , KC_P         , KC_EQL       ,
     KC_CAPS      , KC_A         , KC_S         , KC_D         , KC_F         , KC_G         ,                                 KC_H         , KC_J         , KC_K         , KC_L         , KC_SCLN      , KC_ENT       ,
     KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , KC_B         , KC_LBRC      ,   KC_RBRC      , KC_N         , KC_M         , KC_COMM      , KC_DOT       , KC_SLSH      , KC_QUOT      ,
-    KC_LCTL      , KC_LALT      , KC_LEFT      , KC_RIGHT     , KC_LGUI      , LT(1,KC_SPC) , KC_ESC       ,   KC_BSPC      , KC_RSFT      , _______      , _______      , _______      , MO(1)        , LT(2,KC_BSLS)
+    KC_LCTL      , KC_LALT      , KC_LEFT      , KC_RIGHT     , KC_LGUI      , LT(1,KC_SPC) , KC_ESC       ,   KC_BSPC      , KC_RSFT      , _______      , _______      , _______      , TG(1)        , LT(2,KC_BSLS)
 ),
 
 // Layer 1: Nav / Num. Hold left thumb (Space). MO(3) reaches Settings.
@@ -232,6 +233,7 @@ static void apply_lights(void) {
         rgblight_disable_noeeprom();
     } else {
         rgblight_enable_noeeprom();
+        apply_underglow_color(get_highest_layer(layer_state)); // restore per-layer color/effect
     }
 #endif
     // Pimoroni LED: off when sleeping, else the current layer color.
@@ -331,10 +333,14 @@ void housekeeping_task_user(void) {
     uint8_t cur_layer = get_highest_layer(layer_state);
     if (cur_layer != last_layer || (int8_t)lights_off != last_off
         || (int8_t)pimoroni_cursor_mode != last_cur) {
+        bool layer_changed = (cur_layer != last_layer);
         last_layer = cur_layer;
         last_off   = (int8_t)lights_off;
         last_cur   = (int8_t)pimoroni_cursor_mode;
         pimoroni_apply_layer_color(cur_layer);
+        if (layer_changed) {
+            apply_underglow_color(cur_layer);
+        }
     }
 }
 
@@ -392,6 +398,42 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
         case 4: pimoroni_left_set_rgbw(255, 77, 77, 10);   break; // L4 gaming  - red    #ff4d4d
         default: pimoroni_left_set_rgbw(0, 0, 0, 0);       break; // off
     }
+}
+
+// Underglow (RGBLIGHT strip) per layer: base layer runs the animated effect,
+// every other layer shows a solid color matching that layer (and the Pimoroni
+// LED / cheatsheet). Driven from housekeeping on layer change.
+static void apply_underglow_color(uint8_t layer) {
+#ifdef RGBLIGHT_ENABLE
+    if (lights_off) {
+        return; // handled by apply_lights (RGB disabled entirely)
+    }
+    // QMK hue is 0-255. green~85, cyan~128, orange~17, red~0.
+    switch (layer) {
+        case 0: // base: animated effect
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_RAINBOW_SWIRL);
+            break;
+        case 1: // nav - green
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
+            rgblight_sethsv_noeeprom(85, 255, RGBLIGHT_LIMIT_VAL);
+            break;
+        case 2: // window-mgmt - cyan
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
+            rgblight_sethsv_noeeprom(128, 255, RGBLIGHT_LIMIT_VAL);
+            break;
+        case 3: // settings - orange
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
+            rgblight_sethsv_noeeprom(17, 255, RGBLIGHT_LIMIT_VAL);
+            break;
+        case 4: // gaming - red
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
+            rgblight_sethsv_noeeprom(0, 255, RGBLIGHT_LIMIT_VAL);
+            break;
+        default:
+            rgblight_mode_noeeprom(RGBLIGHT_MODE_RAINBOW_SWIRL);
+            break;
+    }
+#endif
 }
 
 // Set Pimoroni trackball RGB based on layer and mode
