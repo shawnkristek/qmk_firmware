@@ -28,7 +28,6 @@ void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
-static void apply_underglow_color(uint8_t layer);
 
 // Motion/click computed from one Pimoroni read. h/v = scroll, x/y = cursor
 // (only one pair is nonzero depending on mode).
@@ -121,6 +120,59 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 };
 // clang-format on
+
+#ifdef RGB_MATRIX_ENABLE
+// LED layout for RGB_MATRIX, built empirically (see scratchpad/led_map.md):
+// global LED index 0-36 = LEFT half (keys 0-28, underglow 29-36),
+// 37-73 = RIGHT half (underglow 37-44, keys 45-71, trackball 72-73).
+// matrix_co maps each [row][col] to its LED index (NO_LED where unmapped).
+// clang-format off
+led_config_t g_led_config = { {
+    { 24, 19, 14, NO_LED, 9, 5, 1, NO_LED },
+    { 25, 20, 15, NO_LED, 10, 6, 2, NO_LED },
+    { 26, 21, 16, NO_LED, 11, 7, 3, NO_LED },
+    { 27, 22, 17, NO_LED, 12, 8, 4, 0 },
+    { 28, 23, 18, NO_LED, 13, NO_LED, NO_LED, NO_LED },
+    { 45, 50, 55, NO_LED, 59, 63, 67, NO_LED },
+    { 46, 51, 56, NO_LED, 60, 64, 68, NO_LED },
+    { 47, 52, 57, NO_LED, 61, 65, 69, NO_LED },
+    { 48, 53, 58, NO_LED, 62, 66, 70, 71 },
+    { 49, 54, NO_LED, NO_LED, NO_LED, NO_LED, NO_LED, NO_LED },
+}, {
+    { 103, 48 }, {  86,  0 }, {  86, 16 }, {  86, 32 }, {  86, 48 },
+    {  68,  0 }, {  68, 16 }, {  68, 32 }, {  68, 48 },
+    {  51,  0 }, {  51, 16 }, {  51, 32 }, {  51, 48 }, {  51, 64 },
+    {  34,  0 }, {  34, 16 }, {  34, 32 }, {  34, 48 }, {  34, 64 },
+    {  17,  0 }, {  17, 16 }, {  17, 32 }, {  17, 48 }, {  17, 64 },
+    {   0,  0 }, {   0, 16 }, {   0, 32 }, {   0, 48 }, {   0, 64 },
+    {   0, 64 }, {  14, 64 }, {  28, 64 }, {  42, 64 }, {  57, 64 }, {  71, 64 }, {  85, 64 }, { 100, 64 },
+    { 124, 64 }, { 138, 64 }, { 152, 64 }, { 166, 64 }, { 181, 64 }, { 195, 64 }, { 209, 64 }, { 224, 64 },
+    { 224,  0 }, { 224, 16 }, { 224, 32 }, { 224, 48 }, { 224, 64 },
+    { 206,  0 }, { 206, 16 }, { 206, 32 }, { 206, 48 }, { 206, 64 },
+    { 189,  0 }, { 189, 16 }, { 189, 32 }, { 189, 48 },
+    { 172,  0 }, { 172, 16 }, { 172, 32 }, { 172, 48 },
+    { 155,  0 }, { 155, 16 }, { 155, 32 }, { 155, 48 },
+    { 137,  0 }, { 137, 16 }, { 137, 32 }, { 137, 48 },
+    { 120, 48 }, { 180, 56 }, { 180, 56 }
+}, {
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW,
+    LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW
+} };
+// clang-format on
+#endif
 
 #ifdef OLED_ENABLE
 
@@ -228,12 +280,11 @@ static void apply_lights(void) {
         oled_on();
     }
 #endif
-#ifdef RGBLIGHT_ENABLE
+#ifdef RGB_MATRIX_ENABLE
     if (lights_off) {
-        rgblight_disable_noeeprom();
+        rgb_matrix_disable_noeeprom();
     } else {
-        rgblight_enable_noeeprom();
-        apply_underglow_color(get_highest_layer(layer_state)); // restore per-layer color/effect
+        rgb_matrix_enable_noeeprom();
     }
 #endif
     // Pimoroni LED: off when sleeping, else the current layer color.
@@ -325,22 +376,33 @@ void housekeeping_task_user(void) {
     // ---- Apply RGB/OLED on lights_off change ------------------------------
     apply_lights();
     // ---- Drive the Pimoroni LED only when its color should change ---------
-    // Writing the LED over I2C every cycle floods the bus (it can wedge, taking
-    // scroll down with it). Only write when the layer or lights state changes.
+    // (The underglow/per-key coloring is handled by the RGB_MATRIX indicator
+    // hook below; only the Pimoroni I2C LED is rate-limited here.)
     static uint8_t last_layer = 0xFF;
     static int8_t  last_off   = -1;
     static int8_t  last_cur   = -1;
     uint8_t cur_layer = get_highest_layer(layer_state);
     if (cur_layer != last_layer || (int8_t)lights_off != last_off
         || (int8_t)pimoroni_cursor_mode != last_cur) {
-        bool layer_changed = (cur_layer != last_layer);
         last_layer = cur_layer;
         last_off   = (int8_t)lights_off;
         last_cur   = (int8_t)pimoroni_cursor_mode;
         pimoroni_apply_layer_color(cur_layer);
-        if (layer_changed) {
-            apply_underglow_color(cur_layer);
+#ifdef RGB_MATRIX_ENABLE
+        // Base layer runs the animated effect; every other layer switches the
+        // matrix to a static solid-black base so nothing animates and the
+        // indicator hook (rgb_matrix_indicators_advanced_user) fully owns the
+        // per-key colors. Without this, the effect keeps cycling on every LED
+        // the indicator doesn't paint (underglow, transparent keys).
+        if (!lights_off) {
+            if (cur_layer == 0) {
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
+            } else {
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+                rgb_matrix_sethsv_noeeprom(0, 0, 0); // solid black canvas
+            }
         }
+#endif
     }
 }
 
@@ -357,16 +419,15 @@ void oledkit_render_info_user(void) {
 
     // Add dual trackball status indicators
     oled_set_cursor(0, 3);
-    if (is_keyboard_left()) {
-        uint8_t layer = get_highest_layer(layer_state);
-        if (layer == 0) {
-            oled_write_P(PSTR("L:Scroll"), false);
-        } else {
-            oled_write_P(PSTR("L:Mouse"), false);
-        }
-    } else {
-        oled_write_P(PSTR("R:PMW3360"), false);
-    }
+    uint8_t hl = get_highest_layer(layer_state);
+    char dbg[10] = {0};
+    dbg[0] = is_keyboard_left() ? 'L' : 'R';
+    dbg[1] = ' ';
+    dbg[2] = 'H';
+    dbg[3] = 'L';
+    dbg[4] = ':';
+    dbg[5] = '0' + (hl % 10);
+    oled_write(dbg, false);
 }
 #endif
 
@@ -403,38 +464,63 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
 // Underglow (RGBLIGHT strip) per layer: base layer runs the animated effect,
 // every other layer shows a solid color matching that layer (and the Pimoroni
 // LED / cheatsheet). Driven from housekeeping on layer change.
-static void apply_underglow_color(uint8_t layer) {
-#ifdef RGBLIGHT_ENABLE
-    if (lights_off) {
-        return; // handled by apply_lights (RGB disabled entirely)
-    }
-    // QMK hue is 0-255. green~85, cyan~128, orange~17, red~0.
+#ifdef RGB_MATRIX_ENABLE
+// RGB (in 0-255) for a given layer's accent. NULL via the return-by-pointer
+// pattern: returns true and fills r/g/b for layers that have a color; layer 0
+// (base) returns false (handled by the running effect).
+static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b) {
     switch (layer) {
-        case 0: // base: animated effect
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_RAINBOW_SWIRL);
-            break;
-        case 1: // nav - green
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-            rgblight_sethsv_noeeprom(85, 255, RGBLIGHT_LIMIT_VAL);
-            break;
-        case 2: // window-mgmt - cyan
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-            rgblight_sethsv_noeeprom(128, 255, RGBLIGHT_LIMIT_VAL);
-            break;
-        case 3: // settings - orange
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-            rgblight_sethsv_noeeprom(17, 255, RGBLIGHT_LIMIT_VAL);
-            break;
-        case 4: // gaming - red
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
-            rgblight_sethsv_noeeprom(0, 255, RGBLIGHT_LIMIT_VAL);
-            break;
-        default:
-            rgblight_mode_noeeprom(RGBLIGHT_MODE_RAINBOW_SWIRL);
-            break;
+        case 1: *r = 57;  *g = 217; *b = 138; return true; // nav   - green
+        case 2: *r = 0;   *g = 220; *b = 220; return true; // wm    - cyan
+        case 3: *r = 255; *g = 157; *b = 51;  return true; // set   - orange
+        case 4: *r = 255; *g = 77;  *b = 77;  return true; // game  - red
+        default: return false;                              // base/other: effect
     }
-#endif
 }
+
+// Per-key indicator: on non-base layers, paint only mapped keys in the layer
+// color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
+// layer it activates. Base layer is left to the running effect.
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (lights_off) {
+        return false;
+    }
+    uint8_t layer = get_highest_layer(layer_state);
+    if (layer == 0) {
+        return false; // base layer: let the effect run untouched
+    }
+    uint8_t lr = 80, lg = 80, lb = 80; // fallback (any non-color layer)
+    layer_rgb(layer, &lr, &lg, &lb);
+
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+            uint8_t idx = g_led_config.matrix_co[row][col];
+            if (idx == NO_LED || idx < led_min || idx >= led_max) {
+                continue;
+            }
+            uint16_t kc = keymaps[layer][row][col];
+            if (kc == KC_NO || kc == KC_TRANSPARENT) {
+                rgb_matrix_set_color(idx, 0, 0, 0); // unmapped key: off
+                continue;
+            }
+            // Layer-switch keys glow the destination layer's color.
+            uint8_t dest = 0xFF;
+            if (kc >= QK_MOMENTARY && kc <= QK_MOMENTARY_MAX)        dest = QK_MOMENTARY_GET_LAYER(kc);
+            else if (kc >= QK_TOGGLE_LAYER && kc <= QK_TOGGLE_LAYER_MAX) dest = QK_TOGGLE_LAYER_GET_LAYER(kc);
+            else if (kc >= QK_TO && kc <= QK_TO_MAX)                 dest = QK_TO_GET_LAYER(kc);
+            else if (kc >= QK_LAYER_TAP && kc <= QK_LAYER_TAP_MAX)   dest = QK_LAYER_TAP_GET_LAYER(kc);
+
+            uint8_t r = lr, g = lg, b = lb;
+            uint8_t dr, dg, db;
+            if (dest != 0xFF && layer_rgb(dest, &dr, &dg, &db)) {
+                r = dr; g = dg; b = db;
+            }
+            rgb_matrix_set_color(idx, r, g, b);
+        }
+    }
+    return false;
+}
+#endif
 
 // Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {

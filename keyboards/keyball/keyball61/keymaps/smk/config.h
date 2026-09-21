@@ -47,6 +47,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define RGBLIGHT_EFFECT_TWINKLE
 #endif
 
+#ifdef RGB_MATRIX_ENABLE
+#    define RGB_MATRIX_LED_COUNT 74
+#    define RGB_MATRIX_SPLIT { 37, 37 }
+#    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 120   // power budget, matches old cap
+#    define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
+#    define RGB_MATRIX_KEYPRESSES
+#    define SPLIT_TRANSPORT_MIRROR              // mirror master matrix to slave for effects
+// A few effects to choose from on the base layer.
+#    define ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT
+#    define ENABLE_RGB_MATRIX_RAINBOW_MOVING_CHEVRON
+#    define ENABLE_RGB_MATRIX_BREATHING
+#    define ENABLE_RGB_MATRIX_CYCLE_ALL
+#    define ENABLE_RGB_MATRIX_SOLID_COLOR
+#endif
+
 #define TAP_CODE_DELAY 5
 
 // Tap/hold tuning for the layer-tap thumb keys (Space=LT1, backslash=LT2) so
