@@ -48,3 +48,15 @@ record `MAP idx = row col` and advance; Esc (left) or Right Shift (right)
 records "no key" for underglow or trackball LEDs; Space (left) or
 Backspace (right) steps back one. Use the pairings to rebuild
 `g_led_config` in `keymap.c`.
+
+## Pimoroni ball colour (`smk_pimcal.uf2`)
+
+```sh
+qmk flash -e EXTRAFLAGS="-DPIM_CAL" -e CONSOLE_ENABLE=yes
+```
+
+Left half only. All key LEDs show the target layer's colour so the ball
+can be matched to them. grave cycles the target layer 1 to 4; 1/2 nudge
+red, 3/4 green, Tab/Q blue, W/E white, in steps of 10; Esc dumps one
+`pimoroni_left_set_rgbw(...)` line per layer to paste into
+`pimoroni_apply_layer_color` in `keymap.c`.

@@ -28,6 +28,8 @@ void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 static void pimoroni_apply_layer_color(uint8_t layer);
+static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b);
+static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
 
 // Motion/click computed from one Pimoroni read. h/v = scroll, x/y = cursor
 // (only one pair is nonzero depending on mode).
@@ -503,7 +505,67 @@ static bool mw_process(keyrecord_t *record) {
 }
 #endif
 
+#ifdef PIM_CAL
+// TEMP: Pimoroni LED colour tuning. Build with
+//   qmk flash -e EXTRAFLAGS=-DPIM_CAL -e CONSOLE_ENABLE=yes
+// All key LEDs show the target layer's colour; nudge the ball's RGBW until it
+// matches. grave = cycle target layer 1..4; 1/2 = R-/R+; 3/4 = G-/G+;
+// Tab/Q = B-/B+; W/E = W-/W+ (steps of 10); Esc = dump. Keys are swallowed.
+static uint8_t pimc_layer = 1;
+static uint8_t pimc[5][4];
+static bool    pimc_init  = false, pimc_dirty = false;
+static void pimc_setup(void) {
+    for (uint8_t l = 1; l <= 4; l++) {
+        uint8_t r, g, b;
+        layer_rgb(l, &r, &g, &b);
+        pimc[l][0] = r; pimc[l][1] = g; pimc[l][2] = b; pimc[l][3] = 0;
+    }
+    pimc_init = true; pimc_dirty = true;
+}
+static void pimc_dump(void) {
+    for (uint8_t l = 1; l <= 4; l++)
+        uprintf("PIMC case %u: pimoroni_left_set_rgbw(%u, %u, %u, %u);\n", l, pimc[l][0], pimc[l][1], pimc[l][2], pimc[l][3]);
+}
+static bool pimc_process(keyrecord_t *record) {
+    if (!record->event.pressed) return false;
+    last_activity = timer_read32(); lights_off = false;
+    if (!pimc_init) pimc_setup();
+    uint8_t row = record->event.key.row, col = record->event.key.col;
+    int8_t chan = -1, delta = 0;
+    if (row == 0) {
+        switch (col) {
+            case 0: pimc_layer = pimc_layer % 4 + 1; pimc_dirty = true; uprintf("PIMC target layer %u\n", pimc_layer); return false;
+            case 1: chan = 0; delta = -10; break; // 1: R-
+            case 2: chan = 0; delta = +10; break; // 2: R+
+            case 4: chan = 1; delta = -10; break; // 3: G-
+            case 5: chan = 1; delta = +10; break; // 4: G+
+            default: break;
+        }
+    } else if (row == 1) {
+        switch (col) {
+            case 0: chan = 2; delta = -10; break; // Tab: B-
+            case 1: chan = 2; delta = +10; break; // Q:   B+
+            case 2: chan = 3; delta = -10; break; // W:   W-
+            case 4: chan = 3; delta = +10; break; // E:   W+
+            default: break;
+        }
+    } else if (row == 4 && col == 7) { pimc_dump(); return false; } // Esc
+    if (chan >= 0) {
+        int16_t v = pimc[pimc_layer][chan] + delta;
+        if (v < 0) v = 0;
+        if (v > 255) v = 255;
+        pimc[pimc_layer][chan] = (uint8_t)v;
+        pimc_dirty = true;
+        uprintf("PIMC L%u r=%u g=%u b=%u w=%u\n", pimc_layer, pimc[pimc_layer][0], pimc[pimc_layer][1], pimc[pimc_layer][2], pimc[pimc_layer][3]);
+    }
+    return false;
+}
+#endif
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef PIM_CAL
+    return pimc_process(record);
+#endif
 #ifdef LED_MAPWALK
     return mw_process(record);
 #endif
@@ -532,6 +594,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void housekeeping_task_user(void) {
+#ifdef PIM_CAL
+    if (pimc_dirty) {
+        pimc_dirty = false;
+        pimoroni_left_set_rgbw(pimc[pimc_layer][0], pimc[pimc_layer][1], pimc[pimc_layer][2], pimc[pimc_layer][3]);
+    }
+#endif
     // ---- Auto-sleep (master decides) -------------------------------------
     // After LIGHTS_SLEEP_MS with no key/pointer activity, blank the lights.
     // last_activity is reset by process_record_user and by pointer motion.
@@ -588,6 +656,9 @@ void oledkit_render_info_user(void) {
 // lights are off (idle sleep or manual all-off). Only acts on the half that
 // has the Pimoroni (left).
 static void pimoroni_apply_layer_color(uint8_t layer) {
+#ifdef PIM_CAL
+    return; // tuning build drives the ball LED itself
+#endif
     if (!is_keyboard_left()) {
         return;
     }
@@ -606,10 +677,11 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
     // LED off so the trackball is dark during normal typing.
     switch (layer) {
         case 0: pimoroni_left_set_rgbw(0, 0, 0, 0);        break; // L0 base - off
-        case 1: pimoroni_left_set_rgbw(57, 217, 138, 10);  break; // L1 nav     - green  #39d98a
-        case 2: pimoroni_left_set_rgbw(0, 220, 220, 10);   break; // L2 window-mgmt - cyan
-        case 3: pimoroni_left_set_rgbw(255, 157, 51, 10);  break; // L3 settings - orange #ff9d33
-        case 4: pimoroni_left_set_rgbw(255, 77, 77, 10);   break; // L4 gaming  - red    #ff4d4d
+        // Matched by eye to the key LEDs with the PIM_CAL tuning build.
+        case 1: pimoroni_left_set_rgbw(0, 120, 70, 80);    break; // L1 nav         - green
+        case 2: pimoroni_left_set_rgbw(0, 150, 255, 30);   break; // L2 window-mgmt - cyan
+        case 3: pimoroni_left_set_rgbw(105, 90, 0, 0);     break; // L3 settings    - orange
+        case 4: pimoroni_left_set_rgbw(185, 0, 0, 0);      break; // L4 gaming      - red
         default: pimoroni_left_set_rgbw(0, 0, 0, 0);       break; // off
     }
 }
@@ -668,6 +740,19 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
 // layer it activates. Base layer is left to the running effect.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+#ifdef PIM_CAL
+    {
+        if (!pimc_init) pimc_setup();
+        uint8_t r = 0, g = 0, b = 0, v = rgb_matrix_get_val();
+        layer_rgb(pimc_layer, &r, &g, &b);
+        for (uint8_t i = led_min; i < led_max; i++) {
+            uint8_t tr = r, tg = g, tb = b;
+            apply_led_trim(i, &tr, &tg, &tb);
+            rgb_matrix_set_color(i, (uint16_t)tr * v / 255, (uint16_t)tg * v / 255, (uint16_t)tb * v / 255);
+        }
+        return false;
+    }
+#endif
 #ifdef LED_MAPWALK
     if (mw_idx == 0xFF) mw_init();
     for (uint8_t i = led_min; i < led_max; i++) rgb_matrix_set_color(i, i == mw_idx ? 120 : 0, i == mw_idx ? 120 : 0, i == mw_idx ? 120 : 0);
