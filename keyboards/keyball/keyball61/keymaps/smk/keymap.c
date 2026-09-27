@@ -381,30 +381,48 @@ static bool cal_process(keyrecord_t *record) {
     // Bottom-row matrix columns are 0,1,2,4,5,6,7 (col 3 is unused).
     // LEFT half (row 4):  Ctrl=0 Alt=1 Left=2 Right=4 GUI=5 Space=6 Esc=7
     //   channel R=Ctrl G=Alt B=Right, lock=Space, dump=Esc.
-    // RIGHT half top row (row 5): 6/7 = R-/R+, 8/9 = G-/G+, 0/- = B-/B+,
-    // applied to the whole right-half group (Y, O, slash) at once.
-    // Matrix columns for 6,7,8,9,0,- are 6,5,4,2,1,0.
-    if (row == 5) {
-        static const uint8_t group[] = { 67, 55, 52 };
+    // Top-row group trims, +/-5 % per press, applied to a whole group:
+    // RIGHT (row 5): 6/7 = R-/R+, 8/9 = G-/G+, 0/- = B-/B+  (cols 6,5,4,2,1,0)
+    //   group = Y, O, slash.
+    // LEFT  (row 0): `/1 = R-/R+, 2/3 = G-/G+, 4/5 = B-/B+  (cols 0,1,2,4,5,6)
+    //   group = grave, Q, S, B, Alt.
+    if (row == 5 || row == 0) {
+        static const uint8_t group_r[] = { 67, 55, 52 };
+        static const uint8_t group_l[] = { 24, 20, 16, 4, 23 };
+        const uint8_t *group = row == 5 ? group_r : group_l;
+        uint8_t        n     = row == 5 ? sizeof(group_r) : sizeof(group_l);
         int8_t chan = -1, delta = 0;
-        switch (col) {
-            case 6: chan = 0; delta = -5; break; // 6: R-
-            case 5: chan = 0; delta = +5; break; // 7: R+
-            case 4: chan = 1; delta = -5; break; // 8: G-
-            case 2: chan = 1; delta = +5; break; // 9: G+
-            case 1: chan = 2; delta = -5; break; // 0: B-
-            case 0: chan = 2; delta = +5; break; // -: B+
-            default: break;
+        if (row == 5) {
+            switch (col) {
+                case 6: chan = 0; delta = -5; break; // 6: R-
+                case 5: chan = 0; delta = +5; break; // 7: R+
+                case 4: chan = 1; delta = -5; break; // 8: G-
+                case 2: chan = 1; delta = +5; break; // 9: G+
+                case 1: chan = 2; delta = -5; break; // 0: B-
+                case 0: chan = 2; delta = +5; break; // -: B+
+                default: break;
+            }
+        } else {
+            switch (col) {
+                case 0: chan = 0; delta = -5; break; // `: R-
+                case 1: chan = 0; delta = +5; break; // 1: R+
+                case 2: chan = 1; delta = -5; break; // 2: G-
+                case 4: chan = 1; delta = +5; break; // 3: G+
+                case 5: chan = 2; delta = -5; break; // 4: B-
+                case 6: chan = 2; delta = +5; break; // 5: B+
+                default: break;
+            }
         }
         if (chan >= 0) {
-            for (uint8_t i = 0; i < sizeof(group); i++) {
+            for (uint8_t i = 0; i < n; i++) {
                 int16_t v = cal_pct[group[i]][chan] + delta;
                 if (v < 10) v = 10;
                 if (v > 150) v = 150;
                 cal_pct[group[i]][chan] = (uint8_t)v;
             }
             cal_sweeping = false;
-            uprintf("CAL group Y/O/slash -> r=%u g=%u b=%u\n", cal_pct[67][0], cal_pct[67][1], cal_pct[67][2]);
+            uprintf("CAL group %s -> r=%u g=%u b=%u\n", row == 5 ? "Y/O/slash" : "grave/Q/S/B/Alt",
+                    cal_pct[group[0]][0], cal_pct[group[0]][1], cal_pct[group[0]][2]);
             return false;
         }
     }
@@ -623,11 +641,11 @@ typedef struct { uint8_t idx; uint8_t r, g, b; } led_trim_t;
 static const led_trim_t led_trim[] = {
     // These five LEDs run brighter and warmer than the rest; values matched by
     // eye on a white field (swept per channel on B, applied to all five).
-    { 24, 45, 72, 58 }, // grave
-    { 20, 45, 72, 58 }, // Q
-    { 16, 45, 72, 58 }, // S
-    {  4, 45, 72, 58 }, // B
-    { 23, 45, 72, 58 }, // Alt
+    { 24, 40, 72, 65 }, // grave
+    { 20, 40, 72, 65 }, // Q
+    { 16, 40, 72, 65 }, // S
+    {  4, 40, 72, 65 }, // B
+    { 23, 40, 72, 65 }, // Alt
     // Right half, matched by eye with the top-row trim keys.
     { 67, 40, 67, 43 }, // Y
     { 55, 40, 67, 43 }, // O
@@ -663,15 +681,24 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
         cal_init = true;
     }
+    // Field colour: white by default, or a layer's colour with -DLED_CAL_LAYER=n
+    // (e.g. 3 = Settings orange) so trims are judged on the colour that shows
+    // the mismatch most.
+    uint8_t fr = 120, fg = 120, fb = 120;
+#ifdef LED_CAL_LAYER
+    {
+        uint8_t r, g, b;
+        if (layer_rgb(LED_CAL_LAYER, &r, &g, &b)) { fr = (uint16_t)r * 120 / 255; fg = (uint16_t)g * 120 / 255; fb = (uint16_t)b * 120 / 255; }
+    }
+#endif
     for (uint8_t i = led_min; i < led_max; i++) {
-        const uint8_t w = 120;
         uint8_t pr = cal_pct[i][0], pg = cal_pct[i][1], pb = cal_pct[i][2];
         if (i == cal_sel && cal_sweeping) {
             cal_sweep_report();
             uint8_t v = cal_sweep_value();
             if (cal_chan == 0) pr = v; else if (cal_chan == 1) pg = v; else if (cal_chan == 2) pb = v; else pr = pg = pb = v;
         }
-        rgb_matrix_set_color(i, (uint16_t)w * pr / 100, (uint16_t)w * pg / 100, (uint16_t)w * pb / 100);
+        rgb_matrix_set_color(i, (uint16_t)fr * pr / 100, (uint16_t)fg * pg / 100, (uint16_t)fb * pb / 100);
     }
     return false;
 #endif
