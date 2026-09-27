@@ -63,6 +63,13 @@ red, 3/4 green, Tab/Q blue, W/E white, in steps of 10; Esc dumps one
 
 ## VIA (`keyball61_via.json`)
 
+Always build with `-e SKIP_VERSION=yes`, for example
+`qmk flash -e SKIP_VERSION=yes`. VIA's saved-keymap check is derived from
+the build date, so a normal build wipes the keymap edited in VIA on the
+next boot. The flag has to be on the command line; setting it in
+`rules.mk` is too late in the build. Back up your VIA keymap from the
+Save + Load tab before experimenting.
+
 VIA has no built-in definition for this board's USB ID, so load this one:
 in the VIA app enable Settings > Show Design tab, then Design > Load Draft
 Definition and pick `keyball61_via.json`. Drafts live in the browser, so

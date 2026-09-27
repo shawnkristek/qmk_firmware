@@ -90,8 +90,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // activate a layer on every pointer motion, and the resulting rapid layer
 // changes re-write the Pimoroni LED over I2C, which wedges the (flaky) bus and
 // freezes the trackball. We switch modes explicitly via PIM_MODE instead.
-// #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
-// #define AUTO_MOUSE_DEFAULT_LAYER 1
+#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+#define AUTO_MOUSE_DEFAULT_LAYER 5   // mouse buttons under the right home row
+// The old freeze came from rewriting the Pimoroni LED (I2C) on every
+// auto-mouse layer flip. The keymap now ignores the mouse layer for the ball
+// LED, and layer changes only touch the LED from housekeeping.
 
 // Dual Trackball Configuration (PMW3360 + Pimoroni)
 #ifdef POINTING_DEVICE_ENABLE

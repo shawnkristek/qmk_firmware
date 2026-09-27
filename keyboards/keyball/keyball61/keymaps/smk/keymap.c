@@ -29,6 +29,11 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 bool pimoroni_left_ok(void);
 static void pimoroni_apply_layer_color(uint8_t layer);
+// Highest active layer, ignoring the auto-mouse layer (it flips on and off
+// with every trackball move and must not drive the ball LED or layer logic).
+static uint8_t top_layer(layer_state_t s) {
+    return get_highest_layer(s & ~((layer_state_t)1 << AUTO_MOUSE_DEFAULT_LAYER));
+}
 static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b);
 static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
 
@@ -48,10 +53,28 @@ typedef struct {
 // Custom keycodes.
 //   LIGHTS   = manual all-off toggle (RGB + OLED + Pimoroni)
 //   PIM_MODE = toggle the Pimoroni between scroll-wheel and cursor (sticky)
+// VIA numbers "custom" keys from QK_KB_0; Keyball's own keys use QK_KB_0..15,
+// so these start at QK_KB_16 and must stay in this order to match the
+// customKeycodes list in tools/keyball61_via.json (QK_KB has 32 slots).
 enum custom_keycodes {
-    LIGHTS = QK_USER,
-    PIM_MODE,
+    LIGHTS = QK_KB_16, // all lights off/on
+    PIM_MODE,          // Pimoroni scroll <-> cursor
+    TM_NEW,            // tmux: new window        (prefix c)
+    TM_NEXT,           // tmux: next window       (prefix n)
+    TM_PREV,           // tmux: previous window   (prefix p)
+    TM_LAST,           // tmux: last window       (prefix l)
+    TM_VSPL,           // tmux: split left/right  (prefix %)
+    TM_HSPL,           // tmux: split top/bottom  (prefix ")
+    TM_ZOOM,           // tmux: zoom pane         (prefix z)
+    TM_COPY,           // tmux: copy mode         (prefix [)
+    TM_SESS,           // tmux: choose session    (prefix s)
+    VIM_W,             // vim: Esc :w Enter
+    VIM_Q,             // vim: Esc :q Enter
+    VIM_WQ,            // vim: Esc :wq Enter
+    DRAG_LK,           // mouse: toggle left button held (drag lock)
+    DBL_CLK,           // mouse: double click
 };
+#define TMUX_PREFIX SS_LCTL("b")
 
 // When true the Pimoroni acts as a cursor (second pointer) instead of a scroll
 // wheel. Toggled by PIM_MODE.
@@ -117,6 +140,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_LCTL      , KC_A         , KC_S         , KC_D         , KC_F         , _______      ,                                 KC_PGUP      , KC_BTN1      , KC_DOWN      , KC_BTN2      , KC_BTN3      , _______      ,
     KC_LSFT      , KC_Z         , KC_X         , KC_C         , KC_V         , _______      , _______      ,   _______      , KC_PGDN      , _______      , _______      , _______      , _______      , _______      ,
     TG(4)        , _______      , _______      , KC_SPC       , _______      , _______      , _______      ,   KC_DEL       , CPI_D1K      , CPI_D100     , CPI_I100     , CPI_I1K      , _______      , TG(1)
+),
+
+// Layer 5: Mouse (auto). Turns on when a trackball moves; any other key
+// drops back. J/K/L = left/right/middle click, ; = scroll while held,
+// U/I = back/forward, O = double click, P = drag lock.
+[5] = LAYOUT_universal(
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , KC_BTN4      , KC_BTN5      , DBL_CLK      , DRAG_LK      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , KC_BTN1      , KC_BTN2      , KC_BTN3      , SCRL_MO      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______
 ),
 
 [6] = LAYOUT_universal(
@@ -238,7 +272,7 @@ static pimoroni_scroll_t pimoroni_compute_scroll(void) {
 
     // Otherwise: scroll wheel on the base layer (idle elsewhere; cursor work is
     // done by the right-hand PMW3360).
-    if (get_highest_layer(layer_state) == 0) {
+    if (top_layer(layer_state) == 0) {
         static uint8_t idle_reads = 0;
         if (x == 0 && y == 0) {
             // Only clear the accumulator after SUSTAINED idle, not a single
@@ -312,7 +346,7 @@ static void osync_task(void) {
     }
 }
 
-static const char *const layer_names[8] = { "Base", "Nav", "WinMgr", "Settings", "Gaming", "L5", "L6", "L7" };
+static const char *const layer_names[8] = { "Base", "Nav", "WinMgr", "Settings", "Gaming", "Mouse", "L6", "L7" };
 
 static void oled_render_status(const oled_sync_t *o) {
     char    line[22];
@@ -372,7 +406,7 @@ static void apply_lights(void) {
     }
 #endif
     // Pimoroni LED: off when sleeping, else the current layer color.
-    pimoroni_apply_layer_color(get_highest_layer(layer_state));
+    pimoroni_apply_layer_color(top_layer(layer_state));
 }
 
 void keyboard_post_init_user(void) {
@@ -380,6 +414,9 @@ void keyboard_post_init_user(void) {
 #ifdef OLED_ENABLE
     transaction_register_rpc(USER_OLED_SYNC, osync_slave_handler);
 #endif
+    // Keyball restores auto-mouse on/off from its saved config (default off)
+    // before this runs, so switch it on here. AML_TO on Settings toggles it.
+    set_auto_mouse_enable(true);
 }
 
 // Read the Pimoroni locally on the half that has it and inject scroll/click.
@@ -699,6 +736,11 @@ static bool pal_process(keyrecord_t *record) {
 }
 #endif
 
+// Custom mouse keys keep the auto-mouse layer active like real buttons.
+bool is_mouse_record_user(uint16_t keycode, keyrecord_t *record) {
+    return keycode == DRAG_LK || keycode == DBL_CLK;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #ifdef LED_PAL
     return pal_process(record);
@@ -719,6 +761,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         osync_local.row = record->event.key.row;
         osync_local.col = record->event.key.col;
 #endif
+        switch (keycode) {
+            case TM_NEW:  SEND_STRING(TMUX_PREFIX "c"); return false;
+            case TM_NEXT: SEND_STRING(TMUX_PREFIX "n"); return false;
+            case TM_PREV: SEND_STRING(TMUX_PREFIX "p"); return false;
+            case TM_LAST: SEND_STRING(TMUX_PREFIX "l"); return false;
+            case TM_VSPL: SEND_STRING(TMUX_PREFIX "%"); return false;
+            case TM_HSPL: SEND_STRING(TMUX_PREFIX "\""); return false;
+            case TM_ZOOM: SEND_STRING(TMUX_PREFIX "z"); return false;
+            case TM_COPY: SEND_STRING(TMUX_PREFIX "["); return false;
+            case TM_SESS: SEND_STRING(TMUX_PREFIX "s"); return false;
+            case VIM_W:   SEND_STRING(SS_TAP(X_ESC) ":w\n"); return false;
+            case VIM_Q:   SEND_STRING(SS_TAP(X_ESC) ":q\n"); return false;
+            case VIM_WQ:  SEND_STRING(SS_TAP(X_ESC) ":wq\n"); return false;
+            case DBL_CLK: tap_code16(KC_BTN1); tap_code16(KC_BTN1); return false;
+            case DRAG_LK: {
+                static bool held = false;
+                held = !held;
+                if (held) register_code16(KC_BTN1); else unregister_code16(KC_BTN1);
+                return false;
+            }
+            default: break;
+        }
         if (keycode == LIGHTS) {
             lights_off = !lights_off;
             return false; // consume the key
@@ -765,7 +829,7 @@ void housekeeping_task_user(void) {
     static uint8_t last_layer = 0xFF;
     static int8_t  last_off   = -1;
     static int8_t  last_cur   = -1;
-    uint8_t cur_layer = get_highest_layer(layer_state);
+    uint8_t cur_layer = top_layer(layer_state);
     if (cur_layer != last_layer || (int8_t)lights_off != last_off
         || (int8_t)pimoroni_cursor_mode != last_cur) {
         last_layer = cur_layer;
@@ -860,6 +924,24 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // Per-key indicator: on non-base layers, paint only mapped keys in the layer
 // color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
 // layer it activates. Base layer is left to the running effect.
+// Light the keys that are mapped on the auto-mouse layer (buttons, scroll)
+// in that layer's colour, on top of whatever the layer below shows.
+static void paint_mouse_overlay(uint8_t led_min, uint8_t led_max) {
+    uint8_t r, g, b, v = rgb_matrix_get_val();
+    if (!layer_rgb(AUTO_MOUSE_DEFAULT_LAYER, &r, &g, &b)) { r = g = b = 255; }
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+            uint8_t idx = g_led_config.matrix_co[row][col];
+            if (idx == NO_LED || idx < led_min || idx >= led_max) continue;
+            uint16_t kc = keymap_key_to_keycode(AUTO_MOUSE_DEFAULT_LAYER, (keypos_t){ .col = col, .row = row });
+            if (kc == KC_NO || kc == KC_TRANSPARENT) continue;
+            uint8_t tr = r, tg = g, tb = b;
+            apply_led_trim(idx, &tr, &tg, &tb);
+            rgb_matrix_set_color(idx, (uint16_t)tr * v / 255, (uint16_t)tg * v / 255, (uint16_t)tb * v / 255);
+        }
+    }
+}
+
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 #ifdef LED_PAL
     {
@@ -923,9 +1005,12 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (lights_off) {
         return false;
     }
-    uint8_t layer = get_highest_layer(layer_state);
+    bool    mouse_on = layer_state_is(AUTO_MOUSE_DEFAULT_LAYER);
+    uint8_t layer    = top_layer(layer_state);
     if (layer == 0) {
-        return false; // base layer: let the effect run untouched
+        // base layer: let the effect run, only light the mouse buttons if active
+        if (mouse_on) paint_mouse_overlay(led_min, led_max);
+        return false;
     }
     uint8_t lr = 80, lg = 80, lb = 80; // fallback (any non-color layer)
     layer_rgb(layer, &lr, &lg, &lb);
@@ -971,6 +1056,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
             rgb_matrix_set_color(idx, (uint16_t)r * v / 255, (uint16_t)g * v / 255, (uint16_t)b * v / 255);
         }
     }
+    if (mouse_on) paint_mouse_overlay(led_min, led_max);
     return false;
 }
 #endif
@@ -978,8 +1064,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 // Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode on the Settings layer (now layer 3).
-    keyball_set_scroll_mode(get_highest_layer(state) == 3);
-
-    pimoroni_apply_layer_color(get_highest_layer(state));
+    keyball_set_scroll_mode(top_layer(state) == 3);
+    // No Pimoroni LED write here: housekeeping applies it when the (non-mouse)
+    // layer actually changes, keeping I2C out of the layer-change path.
     return state;
 }

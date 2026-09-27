@@ -14,14 +14,164 @@
   ],
   "customKeycodes": [
     {
+      "name": "KBC_RST",
+      "title": "Keyball: reset ball settings",
+      "shortName": "KBC_RST"
+    },
+    {
+      "name": "KBC_SAVE",
+      "title": "Keyball: save ball settings",
+      "shortName": "KBC_SAV"
+    },
+    {
+      "name": "CPI+100",
+      "title": "Ball speed +100 CPI",
+      "shortName": "CPI+100"
+    },
+    {
+      "name": "CPI-100",
+      "title": "Ball speed -100 CPI",
+      "shortName": "CPI-100"
+    },
+    {
+      "name": "CPI+1K",
+      "title": "Ball speed +1000 CPI",
+      "shortName": "CPI+1K"
+    },
+    {
+      "name": "CPI-1K",
+      "title": "Ball speed -1000 CPI",
+      "shortName": "CPI-1K"
+    },
+    {
+      "name": "SCRL_TO",
+      "title": "Right ball: toggle scroll mode",
+      "shortName": "SCRL_TO"
+    },
+    {
+      "name": "SCRL_MO",
+      "title": "Right ball: scroll while held",
+      "shortName": "SCRL_MO"
+    },
+    {
+      "name": "SCRL_D+",
+      "title": "Scroll divider +1",
+      "shortName": "SCRL_D+"
+    },
+    {
+      "name": "SCRL_D-",
+      "title": "Scroll divider -1",
+      "shortName": "SCRL_D-"
+    },
+    {
+      "name": "AML_TO",
+      "title": "Auto mouse layer toggle",
+      "shortName": "AML_TO"
+    },
+    {
+      "name": "AML+50",
+      "title": "Auto mouse timeout +50ms",
+      "shortName": "AML+50"
+    },
+    {
+      "name": "AML-50",
+      "title": "Auto mouse timeout -50ms",
+      "shortName": "AML-50"
+    },
+    {
+      "name": "SSNP_V",
+      "title": "Scroll snap vertical",
+      "shortName": "SSNP_V"
+    },
+    {
+      "name": "SSNP_H",
+      "title": "Scroll snap horizontal",
+      "shortName": "SSNP_H"
+    },
+    {
+      "name": "SSNP_F",
+      "title": "Scroll snap off",
+      "shortName": "SSNP_F"
+    },
+    {
       "name": "Lights",
-      "title": "Toggle all lights (RGB, OLED, Pimoroni)",
-      "shortName": "LIGHT"
+      "title": "All lights off/on",
+      "shortName": "Lights"
     },
     {
       "name": "PimMode",
-      "title": "Pimoroni: scroll <-> cursor",
-      "shortName": "PIM"
+      "title": "Pimoroni scroll/cursor",
+      "shortName": "PimMode"
+    },
+    {
+      "name": "TmNew",
+      "title": "tmux new window",
+      "shortName": "TmNew"
+    },
+    {
+      "name": "TmNext",
+      "title": "tmux next window",
+      "shortName": "TmNext"
+    },
+    {
+      "name": "TmPrev",
+      "title": "tmux previous window",
+      "shortName": "TmPrev"
+    },
+    {
+      "name": "TmLast",
+      "title": "tmux last window",
+      "shortName": "TmLast"
+    },
+    {
+      "name": "TmVSpl",
+      "title": "tmux split left/right",
+      "shortName": "TmVSpl"
+    },
+    {
+      "name": "TmHSpl",
+      "title": "tmux split top/bottom",
+      "shortName": "TmHSpl"
+    },
+    {
+      "name": "TmZoom",
+      "title": "tmux zoom pane",
+      "shortName": "TmZoom"
+    },
+    {
+      "name": "TmCopy",
+      "title": "tmux copy mode",
+      "shortName": "TmCopy"
+    },
+    {
+      "name": "TmSess",
+      "title": "tmux choose session",
+      "shortName": "TmSess"
+    },
+    {
+      "name": "Vim :w",
+      "title": "vim save",
+      "shortName": "Vim :w"
+    },
+    {
+      "name": "Vim :q",
+      "title": "vim quit",
+      "shortName": "Vim :q"
+    },
+    {
+      "name": "Vim :wq",
+      "title": "vim save and quit",
+      "shortName": "Vim :wq"
+    },
+    {
+      "name": "DragLk",
+      "title": "Mouse: toggle left button held",
+      "shortName": "DragLk"
+    },
+    {
+      "name": "DblClk",
+      "title": "Mouse: double click",
+      "shortName": "DblClk"
     }
   ],
   "layouts": {
