@@ -124,7 +124,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef RGB_MATRIX_ENABLE
 // LED layout for RGB_MATRIX, built empirically (see scratchpad/led_map.md):
 // global LED index 0-36 = LEFT half (keys 0-28, underglow 29-36),
-// 37-73 = RIGHT half (underglow 37-44, keys 45-71, trackball 72-73).
+// 37-73 = RIGHT half (underglow 37-43, keys 44-72, trackball 73). Right keys
+// run column by column from the rightmost column, top to bottom (verified
+// by LED walk 2026-09-26).
 // matrix_co maps each [row][col] to its LED index (NO_LED where unmapped).
 // clang-format off
 led_config_t g_led_config = { {
@@ -133,43 +135,36 @@ led_config_t g_led_config = { {
     { 26, 21, 16, NO_LED, 11, 7, 3, NO_LED },
     { 27, 22, 17, NO_LED, 12, 8, 4, 0 },
     { 28, 23, 18, NO_LED, 13, NO_LED, NO_LED, NO_LED },
+    { 44, 49, 54, NO_LED, 58, 62, 66, NO_LED },
     { 45, 50, 55, NO_LED, 59, 63, 67, NO_LED },
     { 46, 51, 56, NO_LED, 60, 64, 68, NO_LED },
-    { 47, 52, 57, NO_LED, 61, 65, 69, NO_LED },
-    { 48, 53, 58, NO_LED, 62, 66, 70, 71 },
-    { 49, 54, NO_LED, NO_LED, NO_LED, NO_LED, NO_LED, NO_LED },
+    { 47, 52, 57, NO_LED, 61, 65, 69, 71 },
+    { 48, 53, NO_LED, NO_LED, NO_LED, NO_LED, 70, 72 },
 }, {
-    { 103, 48 }, {  86,  0 }, {  86, 16 }, {  86, 32 }, {  86, 48 },
-    {  68,  0 }, {  68, 16 }, {  68, 32 }, {  68, 48 },
-    {  51,  0 }, {  51, 16 }, {  51, 32 }, {  51, 48 }, {  51, 64 },
-    {  34,  0 }, {  34, 16 }, {  34, 32 }, {  34, 48 }, {  34, 64 },
-    {  17,  0 }, {  17, 16 }, {  17, 32 }, {  17, 48 }, {  17, 64 },
-    {   0,  0 }, {   0, 16 }, {   0, 32 }, {   0, 48 }, {   0, 64 },
-    {   0, 64 }, {  14, 64 }, {  28, 64 }, {  42, 64 }, {  57, 64 }, {  71, 64 }, {  85, 64 }, { 100, 64 },
-    { 124, 64 }, { 138, 64 }, { 152, 64 }, { 166, 64 }, { 181, 64 }, { 195, 64 }, { 209, 64 }, { 224, 64 },
-    { 224,  0 }, { 224, 16 }, { 224, 32 }, { 224, 48 }, { 224, 64 },
-    { 206,  0 }, { 206, 16 }, { 206, 32 }, { 206, 48 }, { 206, 64 },
-    { 189,  0 }, { 189, 16 }, { 189, 32 }, { 189, 48 },
-    { 172,  0 }, { 172, 16 }, { 172, 32 }, { 172, 48 },
-    { 155,  0 }, { 155, 16 }, { 155, 32 }, { 155, 48 },
-    { 137,  0 }, { 137, 16 }, { 137, 32 }, { 137, 48 },
-    { 120, 48 }, { 180, 56 }, { 180, 56 }
+    { 103, 48 }, {  86,  0 }, {  86, 16 }, {  86, 32 }, {  86, 48 }, {  68,  0 },
+    {  68, 16 }, {  68, 32 }, {  68, 48 }, {  51,  0 }, {  51, 16 }, {  51, 32 },
+    {  51, 48 }, {  51, 64 }, {  34,  0 }, {  34, 16 }, {  34, 32 }, {  34, 48 },
+    {  34, 64 }, {  17,  0 }, {  17, 16 }, {  17, 32 }, {  17, 48 }, {  17, 64 },
+    {   0,  0 }, {   0, 16 }, {   0, 32 }, {   0, 48 }, {   0, 64 }, {   0, 64 },
+    {  14, 64 }, {  28, 64 }, {  42, 64 }, {  57, 64 }, {  71, 64 }, {  85, 64 },
+    { 100, 64 }, { 124, 64 }, { 138, 64 }, { 152, 64 }, { 166, 64 }, { 181, 64 },
+    { 195, 64 }, { 209, 64 }, { 224,  0 }, { 224, 16 }, { 224, 32 }, { 224, 48 },
+    { 224, 64 }, { 206,  0 }, { 206, 16 }, { 206, 32 }, { 206, 48 }, { 206, 64 },
+    { 189,  0 }, { 189, 16 }, { 189, 32 }, { 189, 48 }, { 172,  0 }, { 172, 16 },
+    { 172, 32 }, { 172, 48 }, { 155,  0 }, { 155, 16 }, { 155, 32 }, { 155, 48 },
+    { 137,  0 }, { 137, 16 }, { 137, 32 }, { 137, 48 }, { 137, 64 }, { 120, 48 },
+    { 120, 64 }, { 180, 56 },
 }, {
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW,
     LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW,
-    LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
-    LED_FLAG_KEYLIGHT, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW
+    LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_UNDERGLOW, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT, LED_FLAG_KEYLIGHT,
+    LED_FLAG_KEYLIGHT, LED_FLAG_UNDERGLOW,
 } };
 // clang-format on
 #endif
@@ -379,17 +374,66 @@ static void cal_dump(void) {
 }
 static bool cal_process(keyrecord_t *record) {
     if (!record->event.pressed) return false;
+    last_activity = timer_read32(); // keep the idle sleep away while calibrating
+    lights_off    = false;
     uint8_t row = record->event.key.row, col = record->event.key.col;
-    // Bottom-row matrix columns are 0,1,2,4,5,6,7 (col 3 is unused):
-    // Ctrl=0 Alt=1 Left=2 Right=4 GUI=5 Space=6 Esc=7.
+    const uint8_t orow = row, ocol = col; // original position for LED lookup
+    // Bottom-row matrix columns are 0,1,2,4,5,6,7 (col 3 is unused).
+    // LEFT half (row 4):  Ctrl=0 Alt=1 Left=2 Right=4 GUI=5 Space=6 Esc=7
+    //   channel R=Ctrl G=Alt B=Right, lock=Space, dump=Esc.
+    // RIGHT half top row (row 5): 6/7 = R-/R+, 8/9 = G-/G+, 0/- = B-/B+,
+    // applied to the whole right-half group (Y, O, slash) at once.
+    // Matrix columns for 6,7,8,9,0,- are 6,5,4,2,1,0.
+    if (row == 5) {
+        static const uint8_t group[] = { 67, 55, 52 };
+        int8_t chan = -1, delta = 0;
+        switch (col) {
+            case 6: chan = 0; delta = -5; break; // 6: R-
+            case 5: chan = 0; delta = +5; break; // 7: R+
+            case 4: chan = 1; delta = -5; break; // 8: G-
+            case 2: chan = 1; delta = +5; break; // 9: G+
+            case 1: chan = 2; delta = -5; break; // 0: B-
+            case 0: chan = 2; delta = +5; break; // -: B+
+            default: break;
+        }
+        if (chan >= 0) {
+            for (uint8_t i = 0; i < sizeof(group); i++) {
+                int16_t v = cal_pct[group[i]][chan] + delta;
+                if (v < 10) v = 10;
+                if (v > 150) v = 150;
+                cal_pct[group[i]][chan] = (uint8_t)v;
+            }
+            cal_sweeping = false;
+            uprintf("CAL group Y/O/slash -> r=%u g=%u b=%u\n", cal_pct[67][0], cal_pct[67][1], cal_pct[67][2]);
+            return false;
+        }
+    }
+    // RIGHT half (row 9) only has four physical bottom keys (the trackball
+    // takes the rest): Bksp=0 RShift=1 TG(1)=6 Bksl=7.
+    //   TG(1) cycles the mode R -> G -> B -> ALL, Backspace locks, RShift dumps.
+    if (row == 9) {
+        switch (col) {
+            case 6:
+                cal_chan = (cal_chan + 1) % 4;
+                uprintf("CAL channel %s\n", cal_chan == 0 ? "R" : cal_chan == 1 ? "G" : cal_chan == 2 ? "B" : "ALL (brightness)");
+                return false;
+            case 0: uprintf("CAL key: Backspace (lock)\n"); col = 6; break;
+            case 1: uprintf("CAL key: RShift (dump)\n");    col = 7; break;
+            default: uprintf("CAL key: row 9 col %u (no function)\n", col); return false;
+        }
+        row = 4;
+    }
     if (row == 4) {
         switch (col) {
             case 0: cal_chan = 0; uprintf("CAL channel R\n"); return false;
             case 1: cal_chan = 1; uprintf("CAL channel G\n"); return false;
             case 4: cal_chan = 2; uprintf("CAL channel B\n"); return false;
+            case 2: cal_chan = 3; uprintf("CAL channel ALL (brightness)\n"); return false; // Left arrow on the left half
             case 6: // Space: lock the swept value
                 if (cal_sel != NO_LED && cal_sweeping) {
-                    cal_pct[cal_sel][cal_chan] = cal_sweep_value();
+                    uint8_t v = cal_sweep_value();
+                    if (cal_chan == 3) { cal_pct[cal_sel][0] = v; cal_pct[cal_sel][1] = v; cal_pct[cal_sel][2] = v; }
+                    else cal_pct[cal_sel][cal_chan] = v;
                     cal_sweeping = false;
                     uprintf("CAL LOCK idx %u -> r=%u g=%u b=%u\n", cal_sel, cal_pct[cal_sel][0], cal_pct[cal_sel][1], cal_pct[cal_sel][2]);
                 }
@@ -398,16 +442,53 @@ static bool cal_process(keyrecord_t *record) {
             default: break;
         }
     }
-    uint8_t idx = g_led_config.matrix_co[row][col];
+    uint8_t idx = g_led_config.matrix_co[orow][ocol];
     if (idx != NO_LED) {
         cal_sel = idx; cal_sweeping = true; cal_sweep_t0 = timer_read32();
-        uprintf("CAL sweep idx %u (row %u col %u) channel %c\n", idx, row, col, "RGB"[cal_chan]);
+        uprintf("CAL sweep idx %u (row %u col %u) channel %c\n", idx, orow, ocol, "RGBA"[cal_chan]);
     }
     return false;
 }
 #endif
 
+#ifdef LED_MAPWALK
+// TEMP: LED map walk. Build with
+//   qmk flash -e EXTRAFLAGS=-DLED_MAPWALK -e CONSOLE_ENABLE=yes
+// Lights one LED at a time (this half's range). Press the lit key to record
+// "MAP idx = row col" on the console and advance. RShift/Esc = no key here
+// (underglow/trackball), Backspace = step back one. Keystrokes are swallowed.
+static uint8_t  mw_idx      = 0xFF;
+static uint8_t  mw_first    = 0, mw_last = 0;
+static void mw_init(void) {
+    const uint8_t split[2] = RGB_MATRIX_SPLIT;
+    if (is_keyboard_left()) { mw_first = 0;        mw_last = split[0] - 1; }
+    else                    { mw_first = split[0]; mw_last = RGB_MATRIX_LED_COUNT - 1; }
+    mw_idx = mw_first;
+    uprintf("MAP walk %s half: idx %u..%u\n", is_keyboard_left() ? "LEFT" : "RIGHT", mw_first, mw_last);
+}
+static bool mw_process(keyrecord_t *record) {
+    if (!record->event.pressed) return false;
+    last_activity = timer_read32(); lights_off = false;
+    if (mw_idx == 0xFF) mw_init();
+    uint8_t row = record->event.key.row, col = record->event.key.col;
+    bool skip = (row == 4 && col == 7) || (row == 9 && col == 1); // Esc (L) / RShift (R)
+    bool back = (row == 4 && col == 6) || (row == 9 && col == 0); // Space (L) / Backspace (R)
+    if (back) {
+        if (mw_idx > mw_first) mw_idx--;
+        uprintf("MAP back to idx %u\n", mw_idx);
+        return false;
+    }
+    if (skip) uprintf("MAP idx %u = (no key)\n", mw_idx);
+    else      uprintf("MAP idx %u = row %u col %u\n", mw_idx, row, col);
+    if (mw_idx < mw_last) mw_idx++; else uprintf("MAP walk done\n");
+    return false;
+}
+#endif
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef LED_MAPWALK
+    return mw_process(record);
+#endif
 #ifdef LED_CAL
     return cal_process(record);
 #endif
@@ -547,6 +628,10 @@ static const led_trim_t led_trim[] = {
     { 16, 45, 72, 58 }, // S
     {  4, 45, 72, 58 }, // B
     { 23, 45, 72, 58 }, // Alt
+    // Right half, matched by eye with the top-row trim keys.
+    { 67, 40, 67, 43 }, // Y
+    { 55, 40, 67, 43 }, // O
+    { 52, 40, 67, 43 }, // slash
 };
 static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
     for (uint8_t i = 0; i < sizeof(led_trim) / sizeof(led_trim[0]); i++) {
@@ -565,6 +650,11 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
 // layer it activates. Base layer is left to the running effect.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+#ifdef LED_MAPWALK
+    if (mw_idx == 0xFF) mw_init();
+    for (uint8_t i = led_min; i < led_max; i++) rgb_matrix_set_color(i, i == mw_idx ? 120 : 0, i == mw_idx ? 120 : 0, i == mw_idx ? 120 : 0);
+    return false;
+#endif
 #ifdef LED_CAL
     if (!cal_init) {
         memset(cal_pct, 100, sizeof(cal_pct));
@@ -579,7 +669,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         if (i == cal_sel && cal_sweeping) {
             cal_sweep_report();
             uint8_t v = cal_sweep_value();
-            if (cal_chan == 0) pr = v; else if (cal_chan == 1) pg = v; else pb = v;
+            if (cal_chan == 0) pr = v; else if (cal_chan == 1) pg = v; else if (cal_chan == 2) pb = v; else pr = pg = pb = v;
         }
         rgb_matrix_set_color(i, (uint16_t)w * pr / 100, (uint16_t)w * pg / 100, (uint16_t)w * pb / 100);
     }
