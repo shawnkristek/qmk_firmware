@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "quantum.h"
 #include "drivers/sensors/pimoroni_trackball.h"
+#include "print.h"
 
 // Pimoroni trackball configuration for left half
 static bool pimoroni_initialized = false;
@@ -56,6 +57,12 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click) {
         i2c_init();                 // attempt bus recovery
         pimoroni_backoff   = false;
         pimoroni_fail_count = 0;
+#ifdef CONSOLE_ENABLE
+        // Debug aid (console builds only): handedness plus whether the
+        // Pimoroni answers a ping, so a dead ball can be classified.
+        uprintf("PIM retry: left=%d master=%d ping=%d\n", (int)is_keyboard_left(), (int)is_keyboard_master(),
+                (int)i2c_ping_address(PIMORONI_TRACKBALL_ADDRESS << 1, 2));
+#endif
     }
 
     // Read Pimoroni trackball data

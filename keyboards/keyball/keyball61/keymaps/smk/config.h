@@ -47,6 +47,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define RGBLIGHT_EFFECT_TWINKLE
 #endif
 
+// WS2812 bit timing for the SK6812MINI-E LEDs (datasheet: T0H 300 ns,
+// T1H 600 ns, 1200 ns period). QMK's defaults (350/900/1250) are WS2812B
+// values; T1H 900 is outside the SK6812 window and shows up as per-LED hue
+// errors and "stuck" LEDs on a marginal chain. Must be multiples of 50 ns.
+#define WS2812_TIMING 1200
+#define WS2812_T0H    300
+#define WS2812_T1H    600
+
 #ifdef RGB_MATRIX_ENABLE
 #    define RGB_MATRIX_LED_COUNT 74
 #    define RGB_MATRIX_SPLIT { 37, 37 }

@@ -341,7 +341,76 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
 
 // Any keypress counts as activity: reset the idle timer and wake the lights.
 // The LIGHTS keycode manually toggles everything off/on.
+#ifdef LED_CAL
+// TEMP: live per-LED white-balance calibration. Build with
+//   qmk flash -e EXTRAFLAGS=-DLED_CAL -e CONSOLE_ENABLE=yes
+// All LEDs white. Press a key to select its LED: it starts SWEEPING the
+// active channel's trim 60..130 % (about 8 s per pass). Tap Space when it
+// matches its neighbours to LOCK the value. Bottom-row Ctrl/Alt/GUI choose
+// the R/G/B channel to sweep. Esc dumps the table. Keystrokes are swallowed.
+static uint8_t  cal_pct[RGB_MATRIX_LED_COUNT][3];
+static bool     cal_init     = false;
+static uint8_t  cal_sel      = NO_LED;
+static uint8_t  cal_chan     = 0;
+static bool     cal_sweeping = false;
+static uint32_t cal_sweep_t0 = 0;
+#define CAL_SWEEP_MIN     50
+#define CAL_SWEEP_MAX     100
+#define CAL_SWEEP_STEP    2
+#define CAL_SWEEP_STEP_MS 1000
+static uint8_t cal_sweep_value(void) {
+    uint32_t n    = (CAL_SWEEP_MAX - CAL_SWEEP_MIN) / CAL_SWEEP_STEP + 1;
+    uint32_t step = (timer_elapsed32(cal_sweep_t0) / CAL_SWEEP_STEP_MS) % n;
+    return CAL_SWEEP_MIN + (uint8_t)(step * CAL_SWEEP_STEP);
+}
+// Print the swept value once per step so the console shows where the sweep is.
+static void cal_sweep_report(void) {
+    static uint8_t last = 0xFF;
+    if (!cal_sweeping || cal_sel == NO_LED) return;
+    uint8_t v = cal_sweep_value();
+    if (v != last) { last = v; uprintf("CAL at %u\n", v); }
+}
+static void cal_dump(void) {
+    uprintf("CAL table (idx r g b), only non-100 entries:\n");
+    for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+        if (cal_pct[i][0] != 100 || cal_pct[i][1] != 100 || cal_pct[i][2] != 100)
+            uprintf("CAL { %u, %u, %u, %u },\n", i, cal_pct[i][0], cal_pct[i][1], cal_pct[i][2]);
+    }
+}
+static bool cal_process(keyrecord_t *record) {
+    if (!record->event.pressed) return false;
+    uint8_t row = record->event.key.row, col = record->event.key.col;
+    // Bottom-row matrix columns are 0,1,2,4,5,6,7 (col 3 is unused):
+    // Ctrl=0 Alt=1 Left=2 Right=4 GUI=5 Space=6 Esc=7.
+    if (row == 4) {
+        switch (col) {
+            case 0: cal_chan = 0; uprintf("CAL channel R\n"); return false;
+            case 1: cal_chan = 1; uprintf("CAL channel G\n"); return false;
+            case 4: cal_chan = 2; uprintf("CAL channel B\n"); return false;
+            case 6: // Space: lock the swept value
+                if (cal_sel != NO_LED && cal_sweeping) {
+                    cal_pct[cal_sel][cal_chan] = cal_sweep_value();
+                    cal_sweeping = false;
+                    uprintf("CAL LOCK idx %u -> r=%u g=%u b=%u\n", cal_sel, cal_pct[cal_sel][0], cal_pct[cal_sel][1], cal_pct[cal_sel][2]);
+                }
+                return false;
+            case 7: cal_dump(); return false; // Esc
+            default: break;
+        }
+    }
+    uint8_t idx = g_led_config.matrix_co[row][col];
+    if (idx != NO_LED) {
+        cal_sel = idx; cal_sweeping = true; cal_sweep_t0 = timer_read32();
+        uprintf("CAL sweep idx %u (row %u col %u) channel %c\n", idx, row, col, "RGB"[cal_chan]);
+    }
+    return false;
+}
+#endif
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef LED_CAL
+    return cal_process(record);
+#endif
     if (record->event.pressed) {
         last_activity = timer_read32();
         if (keycode == LIGHTS) {
@@ -388,21 +457,6 @@ void housekeeping_task_user(void) {
         last_off   = (int8_t)lights_off;
         last_cur   = (int8_t)pimoroni_cursor_mode;
         pimoroni_apply_layer_color(cur_layer);
-#ifdef RGB_MATRIX_ENABLE
-        // Base layer runs the animated effect; every other layer switches the
-        // matrix to a static solid-black base so nothing animates and the
-        // indicator hook (rgb_matrix_indicators_advanced_user) fully owns the
-        // per-key colors. Without this, the effect keeps cycling on every LED
-        // the indicator doesn't paint (underglow, transparent keys).
-        if (!lights_off) {
-            if (cur_layer == 0) {
-                rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
-            } else {
-                rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-                rgb_matrix_sethsv_noeeprom(0, 0, 0); // solid black canvas
-            }
-        }
-#endif
     }
 }
 
@@ -470,11 +524,40 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
 // (base) returns false (handled by the running effect).
 static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b) {
     switch (layer) {
-        case 1: *r = 57;  *g = 217; *b = 138; return true; // nav   - green
-        case 2: *r = 0;   *g = 220; *b = 220; return true; // wm    - cyan
-        case 3: *r = 255; *g = 157; *b = 51;  return true; // set   - orange
-        case 4: *r = 255; *g = 77;  *b = 77;  return true; // game  - red
+        // Fully saturated hues: any white component (the cheatsheet's pastel
+        // values) washes out on the key LEDs, and blue reads strong through
+        // the caps, so keep blue low where it is not the point of the color.
+        case 1: *r = 0;   *g = 255; *b = 60;  return true; // nav   - green
+        case 2: *r = 0;   *g = 200; *b = 255; return true; // wm    - cyan
+        case 3: *r = 255; *g = 90;  *b = 0;   return true; // set   - orange
+        case 4: *r = 255; *g = 0;   *b = 0;   return true; // game  - red
         default: return false;                              // base/other: effect
+    }
+}
+
+// Per-LED color trim, in percent, to even out LED-to-LED hue variance on
+// specific keys. Applied to indicator colors only (effects are untouched).
+// 100 = no change. Tune by eye on a solid-color layer (Gaming = pure red).
+typedef struct { uint8_t idx; uint8_t r, g, b; } led_trim_t;
+static const led_trim_t led_trim[] = {
+    // These five LEDs run brighter and warmer than the rest; values matched by
+    // eye on a white field (swept per channel on B, applied to all five).
+    { 24, 45, 72, 58 }, // grave
+    { 20, 45, 72, 58 }, // Q
+    { 16, 45, 72, 58 }, // S
+    {  4, 45, 72, 58 }, // B
+    { 23, 45, 72, 58 }, // Alt
+};
+static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
+    for (uint8_t i = 0; i < sizeof(led_trim) / sizeof(led_trim[0]); i++) {
+        if (led_trim[i].idx != idx) continue;
+        uint16_t tr = (uint16_t)*r * led_trim[i].r / 100;
+        uint16_t tg = (uint16_t)*g * led_trim[i].g / 100;
+        uint16_t tb = (uint16_t)*b * led_trim[i].b / 100;
+        *r = tr > 255 ? 255 : tr;
+        *g = tg > 255 ? 255 : tg;
+        *b = tb > 255 ? 255 : tb;
+        return;
     }
 }
 
@@ -482,6 +565,26 @@ static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b) {
 // color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
 // layer it activates. Base layer is left to the running effect.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+#ifdef LED_CAL
+    if (!cal_init) {
+        memset(cal_pct, 100, sizeof(cal_pct));
+        for (uint8_t i = 0; i < sizeof(led_trim) / sizeof(led_trim[0]); i++) {
+            cal_pct[led_trim[i].idx][0] = led_trim[i].r; cal_pct[led_trim[i].idx][1] = led_trim[i].g; cal_pct[led_trim[i].idx][2] = led_trim[i].b;
+        }
+        cal_init = true;
+    }
+    for (uint8_t i = led_min; i < led_max; i++) {
+        const uint8_t w = 120;
+        uint8_t pr = cal_pct[i][0], pg = cal_pct[i][1], pb = cal_pct[i][2];
+        if (i == cal_sel && cal_sweeping) {
+            cal_sweep_report();
+            uint8_t v = cal_sweep_value();
+            if (cal_chan == 0) pr = v; else if (cal_chan == 1) pg = v; else pb = v;
+        }
+        rgb_matrix_set_color(i, (uint16_t)w * pr / 100, (uint16_t)w * pg / 100, (uint16_t)w * pb / 100);
+    }
+    return false;
+#endif
     if (lights_off) {
         return false;
     }
@@ -491,6 +594,14 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     uint8_t lr = 80, lg = 80, lb = 80; // fallback (any non-color layer)
     layer_rgb(layer, &lr, &lg, &lb);
+
+    // Blank every LED in this frame's range first (underglow, trackball,
+    // unmapped keys) so the base-layer effect never bleeds through, then paint
+    // only the mapped keys below. The effect keeps running underneath, so no
+    // mode/brightness juggling is needed when returning to the base layer.
+    for (uint8_t i = led_min; i < led_max; i++) {
+        rgb_matrix_set_color(i, 0, 0, 0);
+    }
 
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         for (uint8_t col = 0; col < MATRIX_COLS; col++) {
@@ -515,7 +626,12 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
             if (dest != 0xFF && layer_rgb(dest, &dr, &dg, &db)) {
                 r = dr; g = dg; b = db;
             }
-            rgb_matrix_set_color(idx, r, g, b);
+            // Scale to the matrix brightness (capped by
+            // RGB_MATRIX_MAXIMUM_BRIGHTNESS). Raw 0-255 colors wash out to
+            // near-white through the keycaps.
+            apply_led_trim(idx, &r, &g, &b);
+            uint8_t v = rgb_matrix_get_val();
+            rgb_matrix_set_color(idx, (uint16_t)r * v / 255, (uint16_t)g * v / 255, (uint16_t)b * v / 255);
         }
     }
     return false;
