@@ -67,7 +67,7 @@ enum custom_keycodes {
     TM_HSPL,           // tmux: split top/bottom  (prefix ")
     TM_ZOOM,           // tmux: zoom pane         (prefix z)
     TM_COPY,           // tmux: copy mode         (prefix [)
-    TM_SESS,           // tmux: choose session    (prefix s)
+    PREC_TG,           // mouse: precision toggle, 1/4 cursor speed (MX Ergo style)
     VIM_W,             // vim: Esc :w Enter
     VIM_Q,             // vim: Esc :q Enter
     VIM_WQ,            // vim: Esc :wq Enter
@@ -79,6 +79,11 @@ enum custom_keycodes {
 // When true the Pimoroni acts as a cursor (second pointer) instead of a scroll
 // wheel. Toggled by PIM_MODE.
 static bool pimoroni_cursor_mode = false;
+// Precision (sniper) mode, toggled by PREC_TG: trackball cursor motion is
+// divided by PRECISION_DIV, keeping the remainder so slow moves still count.
+#define PRECISION_DIV 4
+static bool    precision_mode = false;
+static int16_t prec_acc_x = 0, prec_acc_y = 0;
 
 // Pimoroni ball colour per layer (RGBW), matched by eye to the key LEDs with
 // the PIM_CAL tuning build. Layer 0 is off (the ball is a scroll wheel there).
@@ -144,11 +149,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Layer 5: Mouse (auto). Turns on when a trackball moves; any other key
 // drops back. J/K/L = left/right/middle click, ; = scroll while held,
-// U/I = back/forward, O = double click, P = drag lock.
+// U/I = back/forward, O = double click, P = drag lock, H = precision toggle.
 [5] = LAYOUT_universal(
     _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , _______      , _______      , _______      , _______      , _______      ,
     _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , KC_BTN4      , KC_BTN5      , DBL_CLK      , DRAG_LK      , _______      ,
-    _______      , _______      , _______      , _______      , _______      , _______      ,                                 _______      , KC_BTN1      , KC_BTN2      , KC_BTN3      , SCRL_MO      , _______      ,
+    _______      , _______      , _______      , _______      , _______      , _______      ,                                 PREC_TG      , KC_BTN1      , KC_BTN2      , KC_BTN3      , SCRL_MO      , _______      ,
     _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______      ,
     _______      , _______      , _______      , _______      , _______      , _______      , _______      ,   _______      , _______      , _______      , _______      , _______      , _______      , _______
 ),
@@ -313,10 +318,11 @@ static uint32_t last_activity = 0;       // timer of last key/pointer activity
 // The master sends this packet every 250 ms (or on change) so either half can
 // draw the same screen.
 #include "transactions.h"
+#include "lib/lib8tion/lib8tion.h"
 typedef struct __attribute__((packed)) {
     uint8_t  cpi;      // keyball CPI step; actual = (cpi + 1) * 100
     uint8_t  div;      // scroll divider
-    uint8_t  flags;    // bit0 scroll mode, bit1 pim cursor, bit2 pim ok, bit3 lights off
+    uint8_t  flags;    // bit0 scroll, bit1 pim cursor, bit2 pim ok, bit3 lights off, bit4 precision
     uint8_t  mods;
     uint16_t kc;       // last pressed keycode
     uint8_t  row, col; // and its matrix position
@@ -326,7 +332,7 @@ static oled_sync_t osync_local, osync_remote;
 static void osync_fill(oled_sync_t *o) {
     o->cpi   = keyball_get_cpi();
     o->div   = keyball_get_scroll_div();
-    o->flags = (keyball_get_scroll_mode() ? 1 : 0) | (pimoroni_cursor_mode ? 2 : 0) | (pimoroni_left_ok() ? 4 : 0) | (lights_off ? 8 : 0);
+    o->flags = (keyball_get_scroll_mode() ? 1 : 0) | (pimoroni_cursor_mode ? 2 : 0) | (pimoroni_left_ok() ? 4 : 0) | (lights_off ? 8 : 0) | (precision_mode ? 16 : 0);
     o->mods  = get_mods() | get_oneshot_mods();
 }
 static void osync_slave_handler(uint8_t in_len, const void *in, uint8_t out_len, void *out) {
@@ -346,10 +352,14 @@ static void osync_task(void) {
     }
 }
 
+static bool precision_active(void) {
+    return is_keyboard_master() ? precision_mode : (osync_remote.flags & 16) != 0;
+}
+
 static const char *const layer_names[8] = { "Base", "Nav", "WinMgr", "Settings", "Gaming", "Mouse", "L6", "L7" };
 
 static void oled_render_status(const oled_sync_t *o) {
-    char    line[22];
+    char    line[32]; // OLED shows 21 columns; room for worst-case numbers
     uint8_t layer = get_highest_layer(layer_state);
     bool    caps  = host_keyboard_led_state().caps_lock;
     uint8_t m     = o->mods;
@@ -357,7 +367,8 @@ static void oled_render_status(const oled_sync_t *o) {
              (m & MOD_MASK_CTRL) ? 'C' : ' ', (m & MOD_MASK_SHIFT) ? 'S' : ' ',
              (m & MOD_MASK_ALT) ? 'A' : ' ', (m & MOD_MASK_GUI) ? 'G' : ' ', caps ? "CAPS" : "");
     oled_write_ln(line, false);
-    snprintf(line, sizeof(line), "Ball %5ucpi %s/%u", (unsigned)((o->cpi + 1) * 100), (o->flags & 1) ? "SCR" : "scr", o->div);
+    snprintf(line, sizeof(line), "Ball %5u %s/%u %s", (unsigned)((o->cpi + 1) * 100), (o->flags & 1) ? "SCR" : "scr", o->div,
+             (o->flags & 16) ? "PREC" : "");
     oled_write_ln(line, false);
     snprintf(line, sizeof(line), "Pim %-7s %s", (o->flags & 2) ? "cursor" : "scroll", (o->flags & 4) ? "ok" : "--");
     oled_write_ln(line, false);
@@ -424,6 +435,15 @@ void keyboard_post_init_user(void) {
 // directly -- no split transport for the Pimoroni.
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     static bool last_click_state = false;
+
+    if (precision_mode) {
+        prec_acc_x += mouse_report.x;
+        prec_acc_y += mouse_report.y;
+        mouse_report.x = prec_acc_x / PRECISION_DIV;
+        mouse_report.y = prec_acc_y / PRECISION_DIV;
+        prec_acc_x -= mouse_report.x * PRECISION_DIV;
+        prec_acc_y -= mouse_report.y * PRECISION_DIV;
+    }
 
     if (is_keyboard_left()) {
         pimoroni_scroll_t s = pimoroni_compute_scroll();
@@ -738,7 +758,7 @@ static bool pal_process(keyrecord_t *record) {
 
 // Custom mouse keys keep the auto-mouse layer active like real buttons.
 bool is_mouse_record_user(uint16_t keycode, keyrecord_t *record) {
-    return keycode == DRAG_LK || keycode == DBL_CLK;
+    return keycode == DRAG_LK || keycode == DBL_CLK || keycode == PREC_TG;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -770,11 +790,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             case TM_HSPL: SEND_STRING(TMUX_PREFIX "\""); return false;
             case TM_ZOOM: SEND_STRING(TMUX_PREFIX "z"); return false;
             case TM_COPY: SEND_STRING(TMUX_PREFIX "["); return false;
-            case TM_SESS: SEND_STRING(TMUX_PREFIX "s"); return false;
             case VIM_W:   SEND_STRING(SS_TAP(X_ESC) ":w\n"); return false;
             case VIM_Q:   SEND_STRING(SS_TAP(X_ESC) ":q\n"); return false;
             case VIM_WQ:  SEND_STRING(SS_TAP(X_ESC) ":wq\n"); return false;
             case DBL_CLK: tap_code16(KC_BTN1); tap_code16(KC_BTN1); return false;
+            case PREC_TG: precision_mode = !precision_mode; prec_acc_x = prec_acc_y = 0; return false;
             case DRAG_LK: {
                 static bool held = false;
                 held = !held;
@@ -926,6 +946,19 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // layer it activates. Base layer is left to the running effect.
 // Light the keys that are mapped on the auto-mouse layer (buttons, scroll)
 // in that layer's colour, on top of whatever the layer below shows.
+// While precision mode is on, pulse any visible PREC_TG key in white.
+static void paint_precision_pulse(uint8_t led_min, uint8_t led_max, uint8_t layer) {
+    if (!precision_active()) return;
+    uint8_t w = (uint16_t)rgb_matrix_get_val() * (40 + scale8(sin8((uint8_t)(timer_read() >> 3)), 215)) / 255;
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+            uint8_t idx = g_led_config.matrix_co[row][col];
+            if (idx == NO_LED || idx < led_min || idx >= led_max) continue;
+            if (keymap_key_to_keycode(layer, (keypos_t){ .col = col, .row = row }) == PREC_TG) rgb_matrix_set_color(idx, w, w, w);
+        }
+    }
+}
+
 static void paint_mouse_overlay(uint8_t led_min, uint8_t led_max) {
     uint8_t r, g, b, v = rgb_matrix_get_val();
     if (!layer_rgb(AUTO_MOUSE_DEFAULT_LAYER, &r, &g, &b)) { r = g = b = 255; }
@@ -1010,6 +1043,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (layer == 0) {
         // base layer: let the effect run, only light the mouse buttons if active
         if (mouse_on) paint_mouse_overlay(led_min, led_max);
+        paint_precision_pulse(led_min, led_max, mouse_on ? AUTO_MOUSE_DEFAULT_LAYER : 0);
         return false;
     }
     uint8_t lr = 80, lg = 80, lb = 80; // fallback (any non-color layer)
@@ -1057,6 +1091,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
     }
     if (mouse_on) paint_mouse_overlay(led_min, led_max);
+    paint_precision_pulse(led_min, led_max, mouse_on ? AUTO_MOUSE_DEFAULT_LAYER : layer);
     return false;
 }
 #endif

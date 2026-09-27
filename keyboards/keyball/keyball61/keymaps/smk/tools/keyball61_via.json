@@ -144,9 +144,9 @@
       "shortName": "TmCopy"
     },
     {
-      "name": "TmSess",
-      "title": "tmux choose session",
-      "shortName": "TmSess"
+      "name": "Prec",
+      "title": "Mouse: precision toggle (1/4 speed)",
+      "shortName": "Prec"
     },
     {
       "name": "Vim :w",
