@@ -130,3 +130,8 @@ void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
         pimoroni_trackball_set_rgbw(r, g, b, w);
     }
 }
+
+// True while reads are succeeding (for the OLED status line).
+bool pimoroni_left_ok(void) {
+    return pimoroni_initialized && !pimoroni_backoff && pimoroni_fail_count == 0;
+}

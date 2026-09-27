@@ -33,6 +33,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // app, no reflash needed. Eight layers covers 0-4 plus the placeholders.
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
+// Master -> slave status packet so the OLED (on the right half, the slave
+// when USB is on the left) can show layer, ball, Pimoroni and last-key info.
+#define SPLIT_TRANSACTION_IDS_USER USER_OLED_SYNC
+
 // Sync layer + RGB state to the slave so the left-half Pimoroni LED can react
 // to layer changes and the RGB on/off toggle (it lives on the slave half).
 #define SPLIT_LAYER_STATE_ENABLE
@@ -88,8 +92,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // freezes the trackball. We switch modes explicitly via PIM_MODE instead.
 // #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 // #define AUTO_MOUSE_DEFAULT_LAYER 1
-
-#define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
 // Dual Trackball Configuration (PMW3360 + Pimoroni)
 #ifdef POINTING_DEVICE_ENABLE

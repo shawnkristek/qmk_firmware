@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void pimoroni_left_init(void);
 bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click);
 void pimoroni_left_set_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+bool pimoroni_left_ok(void);
 static void pimoroni_apply_layer_color(uint8_t layer);
 static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b);
 static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b);
@@ -271,6 +272,79 @@ static pimoroni_scroll_t pimoroni_compute_scroll(void) {
 // key). The Pimoroni is on the master half (USB left), so all of this is local.
 static bool     lights_off    = false;
 static uint32_t last_activity = 0;       // timer of last key/pointer activity
+
+#ifdef OLED_ENABLE
+// ---- OLED status screen ---------------------------------------------------
+// The OLED sits on the right half, which is the slave when USB is on the left.
+// The master sends this packet every 250 ms (or on change) so either half can
+// draw the same screen.
+#include "transactions.h"
+typedef struct __attribute__((packed)) {
+    uint8_t  cpi;      // keyball CPI step; actual = (cpi + 1) * 100
+    uint8_t  div;      // scroll divider
+    uint8_t  flags;    // bit0 scroll mode, bit1 pim cursor, bit2 pim ok, bit3 lights off
+    uint8_t  mods;
+    uint16_t kc;       // last pressed keycode
+    uint8_t  row, col; // and its matrix position
+} oled_sync_t;
+static oled_sync_t osync_local, osync_remote;
+
+static void osync_fill(oled_sync_t *o) {
+    o->cpi   = keyball_get_cpi();
+    o->div   = keyball_get_scroll_div();
+    o->flags = (keyball_get_scroll_mode() ? 1 : 0) | (pimoroni_cursor_mode ? 2 : 0) | (pimoroni_left_ok() ? 4 : 0) | (lights_off ? 8 : 0);
+    o->mods  = get_mods() | get_oneshot_mods();
+}
+static void osync_slave_handler(uint8_t in_len, const void *in, uint8_t out_len, void *out) {
+    if (in_len == sizeof(oled_sync_t)) memcpy(&osync_remote, in, sizeof(oled_sync_t));
+}
+static void osync_task(void) {
+    static uint32_t    last = 0;
+    static oled_sync_t sent;
+    if (!is_keyboard_master()) return;
+    osync_fill(&osync_local);
+    bool changed = memcmp(&sent, &osync_local, sizeof(sent)) != 0;
+    if ((changed && timer_elapsed32(last) > 50) || timer_elapsed32(last) > 250) {
+        if (transaction_rpc_send(USER_OLED_SYNC, sizeof(osync_local), &osync_local)) {
+            sent = osync_local;
+        }
+        last = timer_read32();
+    }
+}
+
+static const char *const layer_names[8] = { "Base", "Nav", "WinMgr", "Settings", "Gaming", "L5", "L6", "L7" };
+
+static void oled_render_status(const oled_sync_t *o) {
+    char    line[22];
+    uint8_t layer = get_highest_layer(layer_state);
+    bool    caps  = host_keyboard_led_state().caps_lock;
+    uint8_t m     = o->mods;
+    snprintf(line, sizeof(line), "%-8s %c%c%c%c %s", layer < 8 ? layer_names[layer] : "?",
+             (m & MOD_MASK_CTRL) ? 'C' : ' ', (m & MOD_MASK_SHIFT) ? 'S' : ' ',
+             (m & MOD_MASK_ALT) ? 'A' : ' ', (m & MOD_MASK_GUI) ? 'G' : ' ', caps ? "CAPS" : "");
+    oled_write_ln(line, false);
+    snprintf(line, sizeof(line), "Ball %5ucpi %s/%u", (unsigned)((o->cpi + 1) * 100), (o->flags & 1) ? "SCR" : "scr", o->div);
+    oled_write_ln(line, false);
+    snprintf(line, sizeof(line), "Pim %-7s %s", (o->flags & 2) ? "cursor" : "scroll", (o->flags & 4) ? "ok" : "--");
+    oled_write_ln(line, false);
+    snprintf(line, sizeof(line), "Key %04X r%uc%u", o->kc, o->row, o->col);
+    oled_write_ln(line, false);
+}
+
+bool oled_task_user(void) {
+    const oled_sync_t *o = is_keyboard_master() ? &osync_local : &osync_remote;
+    if (o->flags & 8) { // lights off (idle sleep / manual all-off)
+        oled_clear();
+        oled_off();
+        return false;
+    }
+    oled_on();
+    if (is_keyboard_master()) osync_fill(&osync_local);
+    oled_set_cursor(0, 0);
+    oled_render_status(o);
+    return false;
+}
+#endif // OLED_ENABLE
 #define LIGHTS_SLEEP_MS 300000            // 5 minutes idle -> lights off
 
 // Apply the current lights_off state to the Pimoroni LED, OLED, and RGB.
@@ -303,6 +377,9 @@ static void apply_lights(void) {
 
 void keyboard_post_init_user(void) {
     last_activity = timer_read32();  // don't sleep immediately at boot
+#ifdef OLED_ENABLE
+    transaction_register_rpc(USER_OLED_SYNC, osync_slave_handler);
+#endif
 }
 
 // Read the Pimoroni locally on the half that has it and inject scroll/click.
@@ -637,6 +714,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #endif
     if (record->event.pressed) {
         last_activity = timer_read32();
+#ifdef OLED_ENABLE
+        osync_local.kc  = keycode;
+        osync_local.row = record->event.key.row;
+        osync_local.col = record->event.key.col;
+#endif
         if (keycode == LIGHTS) {
             lights_off = !lights_off;
             return false; // consume the key
@@ -657,6 +739,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void housekeeping_task_user(void) {
+#ifdef OLED_ENABLE
+    osync_task();
+#endif
 #ifdef PIM_CAL
     if (pimc_dirty) {
         pimc_dirty = false;
@@ -692,27 +777,6 @@ void housekeeping_task_user(void) {
 
 // Enhanced OLED rendering for dual trackball
 #ifdef OLED_ENABLE
-void oledkit_render_info_user(void) {
-    // Keep the OLED dark when the lights are off (idle sleep / manual all-off).
-    if (lights_off) {
-        return;
-    }
-    keyball_oled_render_keyinfo();
-    keyball_oled_render_ballinfo();
-    keyball_oled_render_layerinfo();
-
-    // Add dual trackball status indicators
-    oled_set_cursor(0, 3);
-    uint8_t hl = get_highest_layer(layer_state);
-    char dbg[10] = {0};
-    dbg[0] = is_keyboard_left() ? 'L' : 'R';
-    dbg[1] = ' ';
-    dbg[2] = 'H';
-    dbg[3] = 'L';
-    dbg[4] = ':';
-    dbg[5] = '0' + (hl % 10);
-    oled_write(dbg, false);
-}
 #endif
 
 // Set the Pimoroni trackball LED for the given layer. Forced off when the
