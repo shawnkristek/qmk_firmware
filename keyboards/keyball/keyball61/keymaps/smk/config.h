@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Master -> slave status packet so the OLED (on the right half, the slave
 // when USB is on the left) can show layer, ball, Pimoroni and last-key info.
-#define SPLIT_TRANSACTION_IDS_USER USER_OLED_SYNC
+#define SPLIT_TRANSACTION_IDS_USER USER_OLED_SYNC, USER_KEYMAP_SYNC
 
 // Sync layer + RGB state to the slave so the left-half Pimoroni LED can react
 // to layer changes and the RGB on/off toggle (it lives on the slave half).
@@ -69,6 +69,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 120   // power budget, matches old cap
 #    define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
 #    define RGB_MATRIX_KEYPRESSES
+#    define RGB_MATRIX_SLEEP                   // LEDs off while the host is asleep
 #    define SPLIT_TRANSPORT_MIRROR              // mirror master matrix to slave for effects
 // A few effects to choose from on the base layer.
 #    define ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT

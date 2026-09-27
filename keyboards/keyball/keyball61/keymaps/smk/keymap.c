@@ -83,6 +83,7 @@ static bool pimoroni_cursor_mode = false;
 // divided by PRECISION_DIV, keeping the remainder so slow moves still count.
 #define PRECISION_DIV 4
 static bool    precision_mode = false;
+static inline bool precision_on_master(void) { return precision_mode; }
 static int16_t prec_acc_x = 0, prec_acc_y = 0;
 
 // Pimoroni ball colour per layer (RGBW), matched by eye to the key LEDs with
@@ -322,12 +323,41 @@ static uint32_t last_activity = 0;       // timer of last key/pointer activity
 typedef struct __attribute__((packed)) {
     uint8_t  cpi;      // keyball CPI step; actual = (cpi + 1) * 100
     uint8_t  div;      // scroll divider
-    uint8_t  flags;    // bit0 scroll, bit1 pim cursor, bit2 pim ok, bit3 lights off, bit4 precision
+    uint8_t  flags;    // bit0 scroll, bit1 pim cursor, bit2 pim ok, bit3 lights off, bit4 precision, bit5 host asleep
     uint8_t  mods;
     uint16_t kc;       // last pressed keycode
     uint8_t  row, col; // and its matrix position
 } oled_sync_t;
+_Static_assert(sizeof(oled_sync_t) <= RPC_M2S_BUFFER_SIZE, "OLED sync packet too big");
 static oled_sync_t osync_local, osync_remote;
+
+// Per-key colour "class", decided on the master from the live (VIA) keymap:
+//   KC_LEAVE = leave the effect/underlying colour, 0 = off, 1..7 = that
+//   layer's palette colour, KC_PULSE = precision pulse.
+// Both halves compute this from their own keymap; the master mirrors the VIA
+// keymap into the slave's EEPROM (see keymap mirror below).
+#define KC_LEAVE 0xF
+#define KC_PULSE 0x8
+static uint8_t key_class(uint8_t row, uint8_t col) {
+    bool    precision_mode = is_keyboard_master() ? precision_on_master() : (osync_remote.flags & 16) != 0;
+    bool    mouse_on = layer_state_is(AUTO_MOUSE_DEFAULT_LAYER);
+    uint8_t layer    = top_layer(layer_state);
+    if (mouse_on) {
+        uint16_t mk = keymap_key_to_keycode(AUTO_MOUSE_DEFAULT_LAYER, (keypos_t){ .col = col, .row = row });
+        if (mk == PREC_TG && precision_mode) return KC_PULSE;
+        if (mk != KC_NO && mk != KC_TRANSPARENT) return AUTO_MOUSE_DEFAULT_LAYER;
+    }
+    uint16_t kc = keymap_key_to_keycode(layer, (keypos_t){ .col = col, .row = row });
+    if (kc == PREC_TG && precision_mode) return KC_PULSE;
+    if (layer == 0) return KC_LEAVE; // base: the animated effect owns it
+    if (kc == KC_NO || kc == KC_TRANSPARENT) return 0;
+    uint8_t dest = 0xFF;
+    if (kc >= QK_MOMENTARY && kc <= QK_MOMENTARY_MAX)            dest = QK_MOMENTARY_GET_LAYER(kc);
+    else if (kc >= QK_TOGGLE_LAYER && kc <= QK_TOGGLE_LAYER_MAX) dest = QK_TOGGLE_LAYER_GET_LAYER(kc);
+    else if (kc >= QK_TO && kc <= QK_TO_MAX)                     dest = QK_TO_GET_LAYER(kc);
+    else if (kc >= QK_LAYER_TAP && kc <= QK_LAYER_TAP_MAX)       dest = QK_LAYER_TAP_GET_LAYER(kc);
+    return (dest >= 1 && dest <= 7) ? dest : layer;
+}
 
 static void osync_fill(oled_sync_t *o) {
     o->cpi   = keyball_get_cpi();
@@ -336,12 +366,32 @@ static void osync_fill(oled_sync_t *o) {
     o->mods  = get_mods() | get_oneshot_mods();
 }
 static void osync_slave_handler(uint8_t in_len, const void *in, uint8_t out_len, void *out) {
-    if (in_len == sizeof(oled_sync_t)) memcpy(&osync_remote, in, sizeof(oled_sync_t));
+    if (in_len != sizeof(oled_sync_t)) return;
+    memcpy(&osync_remote, in, sizeof(oled_sync_t));
+    // The master stops all split traffic while the host sleeps, so this packet
+    // is the slave's only notice: blank the LEDs now (RGB_MATRIX_SLEEP). The
+    // master's normal RGB sync clears it again on wake.
+    rgb_matrix_set_suspend_state((osync_remote.flags & 32) != 0);
+}
+
+// Host going to sleep: tell the slave once, before the master goes quiet.
+static bool osync_suspend_sent = false;
+void suspend_power_down_user(void) {
+    if (osync_suspend_sent || !is_keyboard_master()) return;
+    osync_fill(&osync_local);
+    osync_local.flags |= 32;
+    osync_suspend_sent = transaction_rpc_send(USER_OLED_SYNC, sizeof(osync_local), &osync_local);
+}
+void suspend_wakeup_init_user(void) {
+    osync_suspend_sent = false; // next housekeeping sync clears the flag
 }
 static void osync_task(void) {
     static uint32_t    last = 0;
     static oled_sync_t sent;
+    static uint32_t last_fill = 0;
     if (!is_keyboard_master()) return;
+    if (timer_elapsed32(last_fill) < 10) return;
+    last_fill = timer_read32();
     osync_fill(&osync_local);
     bool changed = memcmp(&sent, &osync_local, sizeof(sent)) != 0;
     if ((changed && timer_elapsed32(last) > 50) || timer_elapsed32(last) > 250) {
@@ -350,10 +400,6 @@ static void osync_task(void) {
         }
         last = timer_read32();
     }
-}
-
-static bool precision_active(void) {
-    return is_keyboard_master() ? precision_mode : (osync_remote.flags & 16) != 0;
 }
 
 static const char *const layer_names[8] = { "Base", "Nav", "WinMgr", "Settings", "Gaming", "Mouse", "L6", "L7" };
@@ -378,18 +424,78 @@ static void oled_render_status(const oled_sync_t *o) {
 
 bool oled_task_user(void) {
     const oled_sync_t *o = is_keyboard_master() ? &osync_local : &osync_remote;
-    if (o->flags & 8) { // lights off (idle sleep / manual all-off)
+    if (o->flags & (8 | 32)) { // lights off (idle / manual) or host asleep
         oled_clear();
         oled_off();
         return false;
     }
     oled_on();
-    if (is_keyboard_master()) osync_fill(&osync_local);
     oled_set_cursor(0, 0);
     oled_render_status(o);
     return false;
 }
 #endif // OLED_ENABLE
+
+// ---- VIA keymap mirror ------------------------------------------------------
+// VIA edits only the master's EEPROM keymap, but each half lights its own keys
+// from its own copy. After boot (once the Keyball ball handshake is done) and
+// after any VIA keymap write, the master streams the whole keymap to the slave
+// in small chunks, one every KM_SYNC_GAP_MS; the slave only rewrites bytes that
+// changed. Traffic is zero the rest of the time.
+#include "transactions.h"
+#include "dynamic_keymap.h"
+#define KM_SYNC_CHUNK   24
+#define KM_SYNC_GAP_MS  30
+#define KM_SYNC_BOOT_MS 4000
+#define KM_SYNC_TOTAL   (DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2)
+typedef struct __attribute__((packed)) {
+    uint16_t offset;
+    uint8_t  len;
+    uint8_t  data[KM_SYNC_CHUNK];
+} km_chunk_t;
+_Static_assert(sizeof(km_chunk_t) <= RPC_M2S_BUFFER_SIZE, "keymap chunk too big");
+static uint16_t km_sync_off   = 0;     // next offset to send; KM_SYNC_TOTAL = idle
+static uint32_t km_sync_after = 0;     // don't start before this time
+static bool     km_sync_armed = true;  // boot sync pending
+
+static void km_slave_handler(uint8_t in_len, const void *in, uint8_t out_len, void *out) {
+    const km_chunk_t *c = (const km_chunk_t *)in;
+    if (in_len != sizeof(km_chunk_t) || c->len > KM_SYNC_CHUNK || c->offset + c->len > KM_SYNC_TOTAL) return;
+    dynamic_keymap_set_buffer(c->offset, c->len, (uint8_t *)c->data);
+}
+static void km_sync_request(uint16_t delay_ms) {
+    km_sync_armed = true;
+    km_sync_off   = 0;
+    km_sync_after = timer_read32() + delay_ms;
+}
+static void km_sync_task(void) {
+    static uint32_t last = 0;
+    if (!is_keyboard_master() || !km_sync_armed) return;
+    if ((int32_t)(timer_read32() - km_sync_after) < 0 || timer_elapsed32(last) < KM_SYNC_GAP_MS) return;
+    last = timer_read32();
+    km_chunk_t c;
+    c.offset = km_sync_off;
+    c.len    = (KM_SYNC_TOTAL - km_sync_off) < KM_SYNC_CHUNK ? (KM_SYNC_TOTAL - km_sync_off) : KM_SYNC_CHUNK;
+    dynamic_keymap_get_buffer(c.offset, c.len, c.data);
+    if (transaction_rpc_send(USER_KEYMAP_SYNC, sizeof(c), &c)) {
+        km_sync_off += c.len;
+        if (km_sync_off >= KM_SYNC_TOTAL) km_sync_armed = false;
+    }
+}
+// Any VIA keymap write re-arms the mirror (debounced, so a burst of edits
+// sends one pass). Returning false lets VIA handle the command as usual.
+bool via_command_kb(uint8_t *data, uint8_t length) {
+    switch (data[0]) {
+        case id_dynamic_keymap_set_keycode:
+        case id_dynamic_keymap_reset:
+        case id_dynamic_keymap_set_buffer:
+            km_sync_request(300);
+            break;
+        default:
+            break;
+    }
+    return false;
+}
 #define LIGHTS_SLEEP_MS 300000            // 5 minutes idle -> lights off
 
 // Apply the current lights_off state to the Pimoroni LED, OLED, and RGB.
@@ -425,6 +531,8 @@ void keyboard_post_init_user(void) {
 #ifdef OLED_ENABLE
     transaction_register_rpc(USER_OLED_SYNC, osync_slave_handler);
 #endif
+    transaction_register_rpc(USER_KEYMAP_SYNC, km_slave_handler);
+    km_sync_request(KM_SYNC_BOOT_MS);
     // Keyball restores auto-mouse on/off from its saved config (default off)
     // before this runs, so switch it on here. AML_TO on Settings toggles it.
     set_auto_mouse_enable(true);
@@ -826,6 +934,7 @@ void housekeeping_task_user(void) {
 #ifdef OLED_ENABLE
     osync_task();
 #endif
+    km_sync_task();
 #ifdef PIM_CAL
     if (pimc_dirty) {
         pimc_dirty = false;
@@ -946,35 +1055,6 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // layer it activates. Base layer is left to the running effect.
 // Light the keys that are mapped on the auto-mouse layer (buttons, scroll)
 // in that layer's colour, on top of whatever the layer below shows.
-// While precision mode is on, pulse any visible PREC_TG key in white.
-static void paint_precision_pulse(uint8_t led_min, uint8_t led_max, uint8_t layer) {
-    if (!precision_active()) return;
-    uint8_t w = (uint16_t)rgb_matrix_get_val() * (40 + scale8(sin8((uint8_t)(timer_read() >> 3)), 215)) / 255;
-    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
-            uint8_t idx = g_led_config.matrix_co[row][col];
-            if (idx == NO_LED || idx < led_min || idx >= led_max) continue;
-            if (keymap_key_to_keycode(layer, (keypos_t){ .col = col, .row = row }) == PREC_TG) rgb_matrix_set_color(idx, w, w, w);
-        }
-    }
-}
-
-static void paint_mouse_overlay(uint8_t led_min, uint8_t led_max) {
-    uint8_t r, g, b, v = rgb_matrix_get_val();
-    if (!layer_rgb(AUTO_MOUSE_DEFAULT_LAYER, &r, &g, &b)) { r = g = b = 255; }
-    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-        for (uint8_t col = 0; col < MATRIX_COLS; col++) {
-            uint8_t idx = g_led_config.matrix_co[row][col];
-            if (idx == NO_LED || idx < led_min || idx >= led_max) continue;
-            uint16_t kc = keymap_key_to_keycode(AUTO_MOUSE_DEFAULT_LAYER, (keypos_t){ .col = col, .row = row });
-            if (kc == KC_NO || kc == KC_TRANSPARENT) continue;
-            uint8_t tr = r, tg = g, tb = b;
-            apply_led_trim(idx, &tr, &tg, &tb);
-            rgb_matrix_set_color(idx, (uint16_t)tr * v / 255, (uint16_t)tg * v / 255, (uint16_t)tb * v / 255);
-        }
-    }
-}
-
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 #ifdef LED_PAL
     {
@@ -1035,63 +1115,34 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     return false;
 #endif
-    if (lights_off) {
+    bool master = is_keyboard_master();
+    if (master ? lights_off : (osync_remote.flags & (8 | 32))) {
         return false;
     }
-    bool    mouse_on = layer_state_is(AUTO_MOUSE_DEFAULT_LAYER);
     uint8_t layer    = top_layer(layer_state);
-    if (layer == 0) {
-        // base layer: let the effect run, only light the mouse buttons if active
-        if (mouse_on) paint_mouse_overlay(led_min, led_max);
-        paint_precision_pulse(led_min, led_max, mouse_on ? AUTO_MOUSE_DEFAULT_LAYER : 0);
-        return false;
-    }
-    uint8_t lr = 80, lg = 80, lb = 80; // fallback (any non-color layer)
-    layer_rgb(layer, &lr, &lg, &lb);
+    uint8_t v        = rgb_matrix_get_val();
 
-    // Blank every LED in this frame's range first (underglow, trackball,
-    // unmapped keys) so the base-layer effect never bleeds through, then paint
-    // only the mapped keys below. The effect keeps running underneath, so no
-    // mode/brightness juggling is needed when returning to the base layer.
-    for (uint8_t i = led_min; i < led_max; i++) {
-        rgb_matrix_set_color(i, 0, 0, 0);
+    // Off-base layers own every LED: blank the range (underglow, trackball,
+    // unmapped keys) so the effect never bleeds through, then paint keys.
+    if (layer != 0) {
+        for (uint8_t i = led_min; i < led_max; i++) rgb_matrix_set_color(i, 0, 0, 0);
     }
+    uint8_t pulse = (uint16_t)v * (40 + scale8(sin8((uint8_t)(timer_read() >> 3)), 215)) / 255;
 
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         for (uint8_t col = 0; col < MATRIX_COLS; col++) {
             uint8_t idx = g_led_config.matrix_co[row][col];
-            if (idx == NO_LED || idx < led_min || idx >= led_max) {
-                continue;
-            }
-            // Live keymap (dynamic/VIA on the master); the slave half only has
-            // the compiled defaults, so its lights follow VIA edits after a reflash.
-            uint16_t kc = keymap_key_to_keycode(layer, (keypos_t){ .col = col, .row = row });
-            if (kc == KC_NO || kc == KC_TRANSPARENT) {
-                rgb_matrix_set_color(idx, 0, 0, 0); // unmapped key: off
-                continue;
-            }
-            // Layer-switch keys glow the destination layer's color.
-            uint8_t dest = 0xFF;
-            if (kc >= QK_MOMENTARY && kc <= QK_MOMENTARY_MAX)        dest = QK_MOMENTARY_GET_LAYER(kc);
-            else if (kc >= QK_TOGGLE_LAYER && kc <= QK_TOGGLE_LAYER_MAX) dest = QK_TOGGLE_LAYER_GET_LAYER(kc);
-            else if (kc >= QK_TO && kc <= QK_TO_MAX)                 dest = QK_TO_GET_LAYER(kc);
-            else if (kc >= QK_LAYER_TAP && kc <= QK_LAYER_TAP_MAX)   dest = QK_LAYER_TAP_GET_LAYER(kc);
-
-            uint8_t r = lr, g = lg, b = lb;
-            uint8_t dr, dg, db;
-            if (dest != 0xFF && layer_rgb(dest, &dr, &dg, &db)) {
-                r = dr; g = dg; b = db;
-            }
-            // Scale to the matrix brightness (capped by
-            // RGB_MATRIX_MAXIMUM_BRIGHTNESS). Raw 0-255 colors wash out to
-            // near-white through the keycaps.
+            if (idx == NO_LED || idx < led_min || idx >= led_max) continue;
+            uint8_t k = key_class(row, col);
+            if (k == KC_LEAVE) continue;
+            if (k == KC_PULSE) { rgb_matrix_set_color(idx, pulse, pulse, pulse); continue; }
+            if (k == 0)        { rgb_matrix_set_color(idx, 0, 0, 0); continue; }
+            uint8_t r = 80, g = 80, b = 80;
+            layer_rgb(k, &r, &g, &b);
             apply_led_trim(idx, &r, &g, &b);
-            uint8_t v = rgb_matrix_get_val();
             rgb_matrix_set_color(idx, (uint16_t)r * v / 255, (uint16_t)g * v / 255, (uint16_t)b * v / 255);
         }
     }
-    if (mouse_on) paint_mouse_overlay(led_min, led_max);
-    paint_precision_pulse(led_min, led_max, mouse_on ? AUTO_MOUSE_DEFAULT_LAYER : layer);
     return false;
 }
 #endif
