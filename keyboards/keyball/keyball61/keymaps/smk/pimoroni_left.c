@@ -23,14 +23,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static bool pimoroni_initialized = false;
 // A flaky/disconnected Pimoroni makes every I2C read time out, stalling the
 // main loop (laggy typing). After this many consecutive failures we BACK OFF:
-// stop reading for a window so typing stays fast, then periodically retry with
-// a bus re-init so it recovers on its own when the connection comes back (no
+// stop reading for a window so typing stays fast, then periodically retry
+// after an I2C bus-clear so a hung Pimoroni recovers on its own (no
 // power-cycle needed).
 #define PIMORONI_FAIL_LIMIT 20
 #define PIMORONI_RETRY_MS   1000
 static uint8_t  pimoroni_fail_count = 0;
 static bool     pimoroni_backoff    = false;
 static uint16_t pimoroni_retry_at   = 0;
+
+// I2C bus clear (I2C-bus specification 3.1.16). If the Pimoroni is left
+// mid-transaction by a glitch it can hold SDA low forever, and every later
+// transfer fails until it is power-cycled. Clocking SCL up to 9 times lets it
+// finish the byte it thinks it is sending and release SDA; a STOP then resets
+// its state machine. Open-drain is emulated (drive low / release to input
+// with pull-up) so this works on any port. i2c_init() only runs once per
+// boot, so the I2C pin function is restored by hand afterwards.
+// Returns true if SDA was released (or was never held).
+#define PIM_I2C_PIN_MODE (PAL_MODE_ALTERNATE_I2C | PAL_RP_PAD_SLEWFAST | PAL_RP_PAD_PUE | PAL_RP_PAD_DRIVE4)
+static inline void pim_line_release(pin_t p) { palSetLineMode(p, PAL_MODE_INPUT_PULLUP); }
+static inline void pim_line_low(pin_t p)     { palSetLineMode(p, PAL_MODE_OUTPUT_PUSHPULL); palClearLine(p); }
+static bool pimoroni_i2c_bus_clear(void) {
+    pim_line_release(I2C1_SDA_PIN);
+    pim_line_release(I2C1_SCL_PIN);
+    wait_us(10);
+    uint8_t clocks = 0;
+    while (!palReadLine(I2C1_SDA_PIN) && clocks < 9) {
+        pim_line_low(I2C1_SCL_PIN);     wait_us(5);
+        pim_line_release(I2C1_SCL_PIN); wait_us(5);
+        clocks++;
+    }
+    bool released = palReadLine(I2C1_SDA_PIN);
+    // STOP: SDA low -> SCL high -> SDA high.
+    pim_line_low(I2C1_SDA_PIN);     wait_us(5);
+    pim_line_release(I2C1_SCL_PIN); wait_us(5);
+    pim_line_release(I2C1_SDA_PIN); wait_us(5);
+    palSetLineMode(I2C1_SDA_PIN, PIM_I2C_PIN_MODE);
+    palSetLineMode(I2C1_SCL_PIN, PIM_I2C_PIN_MODE);
+#ifdef CONSOLE_ENABLE
+    uprintf("PIM bus clear: %u clocks, SDA %s\n", clocks, released ? "released" : "STILL LOW");
+#endif
+    return released;
+}
 
 // Initialize Pimoroni trackball on left half
 void pimoroni_left_init(void) {
@@ -48,13 +82,13 @@ bool pimoroni_left_read_motion(int16_t *x, int16_t *y, uint8_t *click) {
     }
 
     // While backing off (the ball went unresponsive), skip reads so a dead I2C
-    // doesn't stall typing. Once PIMORONI_RETRY_MS passes, re-init the bus and
-    // try again -- recovers automatically when the connection returns.
+    // doesn't stall typing. Once PIMORONI_RETRY_MS passes, clear the bus and
+    // try again -- recovers automatically when the ball is reachable again.
     if (pimoroni_backoff) {
         if (timer_elapsed(pimoroni_retry_at) < PIMORONI_RETRY_MS) {
             return false;
         }
-        i2c_init();                 // attempt bus recovery
+        pimoroni_i2c_bus_clear();   // release a slave stuck holding SDA low
         pimoroni_backoff   = false;
         pimoroni_fail_count = 0;
 #ifdef CONSOLE_ENABLE
