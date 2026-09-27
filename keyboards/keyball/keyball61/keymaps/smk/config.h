@@ -29,6 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #undef SPLIT_HAND_MATRIX_GRID_LOW_IS_LEFT
 #define EE_HANDS
 
+// VIA: keymap lives in the master's EEPROM and is edited live from the VIA
+// app, no reflash needed. Eight layers covers 0-4 plus the placeholders.
+#define DYNAMIC_KEYMAP_LAYER_COUNT 8
+
 // Sync layer + RGB state to the slave so the left-half Pimoroni LED can react
 // to layer changes and the RGB on/off toggle (it lives on the slave half).
 #define SPLIT_LAYER_STATE_ENABLE

@@ -56,7 +56,18 @@ qmk flash -e EXTRAFLAGS="-DPIM_CAL" -e CONSOLE_ENABLE=yes
 ```
 
 Left half only. All key LEDs show the target layer's colour so the ball
-can be matched to them. grave cycles the target layer 1 to 4; 1/2 nudge
+can be matched to them. grave cycles the target layer 1 to 7; 1/2 nudge
 red, 3/4 green, Tab/Q blue, W/E white, in steps of 10; Esc dumps one
 `pimoroni_left_set_rgbw(...)` line per layer to paste into
 `pimoroni_apply_layer_color` in `keymap.c`.
+
+## VIA (`keyball61_via.json`)
+
+VIA has no built-in definition for this board's USB ID, so load this one:
+in the VIA app enable Settings > Show Design tab, then Design > Load Draft
+Definition and pick `keyball61_via.json`. Drafts live in the browser, so
+reload it if VIA stops recognising the board. Connect the LEFT half over
+USB; VIA edits the master's EEPROM keymap and take effect immediately.
+The left half's per-key lighting follows VIA edits; the right half shows
+the compiled defaults until it is reflashed. Choose "Dual" under Ball
+availability. Custom keys appear as Lights and PimMode.

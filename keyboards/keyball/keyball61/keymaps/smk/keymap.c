@@ -56,6 +56,19 @@ enum custom_keycodes {
 // wheel. Toggled by PIM_MODE.
 static bool pimoroni_cursor_mode = false;
 
+// Pimoroni ball colour per layer (RGBW), matched by eye to the key LEDs with
+// the PIM_CAL tuning build. Layer 0 is off (the ball is a scroll wheel there).
+static const uint8_t pim_layer_rgbw[8][4] = {
+    {   0,   0,   0,   0 }, // 0 base - off
+    {   0,  75,  60,  20 }, // 1 nav
+    {  50,   0, 245,   0 }, // 2 window-mgmt
+    { 145,  20, 200,   0 }, // 3 settings
+    { 185,   0,   0,   0 }, // 4 gaming
+    { 115,  60,   0,  50 }, // 5
+    { 185, 200,   0,   0 }, // 6 (not yet rematched to the orange keys)
+    {   0, 210,   0,  90 }, // 7
+};
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [0] = LAYOUT_universal(
@@ -512,18 +525,15 @@ static bool mw_process(keyrecord_t *record) {
 // matches. grave = cycle target layer 1..4; 1/2 = R-/R+; 3/4 = G-/G+;
 // Tab/Q = B-/B+; W/E = W-/W+ (steps of 10); Esc = dump. Keys are swallowed.
 static uint8_t pimc_layer = 1;
-static uint8_t pimc[5][4];
+static uint8_t pimc[8][4];
 static bool    pimc_init  = false, pimc_dirty = false;
 static void pimc_setup(void) {
-    for (uint8_t l = 1; l <= 4; l++) {
-        uint8_t r, g, b;
-        layer_rgb(l, &r, &g, &b);
-        pimc[l][0] = r; pimc[l][1] = g; pimc[l][2] = b; pimc[l][3] = 0;
-    }
+    for (uint8_t l = 1; l <= 7; l++)
+        for (uint8_t c = 0; c < 4; c++) pimc[l][c] = pim_layer_rgbw[l][c];
     pimc_init = true; pimc_dirty = true;
 }
 static void pimc_dump(void) {
-    for (uint8_t l = 1; l <= 4; l++)
+    for (uint8_t l = 1; l <= 7; l++)
         uprintf("PIMC case %u: pimoroni_left_set_rgbw(%u, %u, %u, %u);\n", l, pimc[l][0], pimc[l][1], pimc[l][2], pimc[l][3]);
 }
 static bool pimc_process(keyrecord_t *record) {
@@ -534,7 +544,7 @@ static bool pimc_process(keyrecord_t *record) {
     int8_t chan = -1, delta = 0;
     if (row == 0) {
         switch (col) {
-            case 0: pimc_layer = pimc_layer % 4 + 1; pimc_dirty = true; uprintf("PIMC target layer %u\n", pimc_layer); return false;
+            case 0: pimc_layer = pimc_layer % 7 + 1; pimc_dirty = true; uprintf("PIMC target layer %u\n", pimc_layer); return false;
             case 1: chan = 0; delta = -10; break; // 1: R-
             case 2: chan = 0; delta = +10; break; // 2: R+
             case 4: chan = 1; delta = -10; break; // 3: G-
@@ -562,7 +572,60 @@ static bool pimc_process(keyrecord_t *record) {
 }
 #endif
 
+#ifdef LED_PAL
+// TEMP: layer palette explorer. Build with
+//   qmk flash -e EXTRAFLAGS=-DLED_PAL -e CONSOLE_ENABLE=yes
+// All key LEDs show the current slot's colour. grave = next slot (1..7);
+// 1/2 = R-/R+; 3/4 = G-/G+; Tab/Q = B-/B+ (steps of 15); Esc = dump all
+// seven as layer_rgb() case lines. Keystrokes are swallowed.
+static uint8_t pal_slot = 1;
+static uint8_t pal[8][3];
+static bool    pal_init = false;
+static void pal_setup(void) {
+    for (uint8_t l = 1; l <= 7; l++) layer_rgb(l, &pal[l][0], &pal[l][1], &pal[l][2]);
+    pal_init = true;
+}
+static bool pal_process(keyrecord_t *record) {
+    if (!record->event.pressed) return false;
+    last_activity = timer_read32(); lights_off = false;
+    if (!pal_init) pal_setup();
+    uint8_t row = record->event.key.row, col = record->event.key.col;
+    int8_t chan = -1, delta = 0;
+    if (row == 0) {
+        switch (col) {
+            case 0: pal_slot = pal_slot % 7 + 1; uprintf("PAL slot %u: r=%u g=%u b=%u\n", pal_slot, pal[pal_slot][0], pal[pal_slot][1], pal[pal_slot][2]); return false;
+            case 1: chan = 0; delta = -15; break; // 1: R-
+            case 2: chan = 0; delta = +15; break; // 2: R+
+            case 4: chan = 1; delta = -15; break; // 3: G-
+            case 5: chan = 1; delta = +15; break; // 4: G+
+            default: break;
+        }
+    } else if (row == 1) {
+        switch (col) {
+            case 0: chan = 2; delta = -15; break; // Tab: B-
+            case 1: chan = 2; delta = +15; break; // Q:   B+
+            default: break;
+        }
+    } else if (row == 4 && col == 7) { // Esc: dump
+        for (uint8_t l = 1; l <= 7; l++)
+            uprintf("PAL case %u: *r = %u; *g = %u; *b = %u; return true;\n", l, pal[l][0], pal[l][1], pal[l][2]);
+        return false;
+    }
+    if (chan >= 0) {
+        int16_t v = pal[pal_slot][chan] + delta;
+        if (v < 0) v = 0;
+        if (v > 255) v = 255;
+        pal[pal_slot][chan] = (uint8_t)v;
+        uprintf("PAL slot %u: r=%u g=%u b=%u\n", pal_slot, pal[pal_slot][0], pal[pal_slot][1], pal[pal_slot][2]);
+    }
+    return false;
+}
+#endif
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef LED_PAL
+    return pal_process(record);
+#endif
 #ifdef PIM_CAL
     return pimc_process(record);
 #endif
@@ -675,15 +738,8 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
     }
     // Colors match the cheatsheet per-layer accents. Base layer (0) keeps the
     // LED off so the trackball is dark during normal typing.
-    switch (layer) {
-        case 0: pimoroni_left_set_rgbw(0, 0, 0, 0);        break; // L0 base - off
-        // Matched by eye to the key LEDs with the PIM_CAL tuning build.
-        case 1: pimoroni_left_set_rgbw(0, 120, 70, 80);    break; // L1 nav         - green
-        case 2: pimoroni_left_set_rgbw(0, 150, 255, 30);   break; // L2 window-mgmt - cyan
-        case 3: pimoroni_left_set_rgbw(105, 90, 0, 0);     break; // L3 settings    - orange
-        case 4: pimoroni_left_set_rgbw(185, 0, 0, 0);      break; // L4 gaming      - red
-        default: pimoroni_left_set_rgbw(0, 0, 0, 0);       break; // off
-    }
+    if (layer < 8) pimoroni_left_set_rgbw(pim_layer_rgbw[layer][0], pim_layer_rgbw[layer][1], pim_layer_rgbw[layer][2], pim_layer_rgbw[layer][3]);
+    else           pimoroni_left_set_rgbw(0, 0, 0, 0);
 }
 
 // Underglow (RGBLIGHT strip) per layer: base layer runs the animated effect,
@@ -695,14 +751,15 @@ static void pimoroni_apply_layer_color(uint8_t layer) {
 // (base) returns false (handled by the running effect).
 static bool layer_rgb(uint8_t layer, uint8_t *r, uint8_t *g, uint8_t *b) {
     switch (layer) {
-        // Fully saturated hues: any white component (the cheatsheet's pastel
-        // values) washes out on the key LEDs, and blue reads strong through
-        // the caps, so keep blue low where it is not the point of the color.
-        case 1: *r = 0;   *g = 255; *b = 60;  return true; // nav   - green
-        case 2: *r = 0;   *g = 200; *b = 255; return true; // wm    - cyan
-        case 3: *r = 255; *g = 90;  *b = 0;   return true; // set   - orange
-        case 4: *r = 255; *g = 0;   *b = 0;   return true; // game  - red
-        default: return false;                              // base/other: effect
+        // Chosen by eye with the LED_PAL palette explorer build.
+        case 1: *r = 15;  *g = 105; *b = 60;  return true; // nav
+        case 2: *r = 0;   *g = 0;   *b = 255; return true; // window-mgmt
+        case 3: *r = 135; *g = 0;   *b = 255; return true; // settings
+        case 4: *r = 255; *g = 0;   *b = 0;   return true; // gaming
+        case 5: *r = 255; *g = 30;  *b = 0;   return true;
+        case 6: *r = 255; *g = 110; *b = 0;   return true;
+        case 7: *r = 45;  *g = 255; *b = 0;   return true;
+        default: return false;                              // base: effect
     }
 }
 
@@ -740,6 +797,18 @@ static void apply_led_trim(uint8_t idx, uint8_t *r, uint8_t *g, uint8_t *b) {
 // color, and tint each layer-switch key (TG/MO/LT/TO) with the color of the
 // layer it activates. Base layer is left to the running effect.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+#ifdef LED_PAL
+    {
+        if (!pal_init) pal_setup();
+        uint8_t v = rgb_matrix_get_val();
+        for (uint8_t i = led_min; i < led_max; i++) {
+            uint8_t r = pal[pal_slot][0], g = pal[pal_slot][1], b = pal[pal_slot][2];
+            apply_led_trim(i, &r, &g, &b);
+            rgb_matrix_set_color(i, (uint16_t)r * v / 255, (uint16_t)g * v / 255, (uint16_t)b * v / 255);
+        }
+        return false;
+    }
+#endif
 #ifdef PIM_CAL
     {
         if (!pimc_init) pimc_setup();
@@ -811,7 +880,9 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
             if (idx == NO_LED || idx < led_min || idx >= led_max) {
                 continue;
             }
-            uint16_t kc = keymaps[layer][row][col];
+            // Live keymap (dynamic/VIA on the master); the slave half only has
+            // the compiled defaults, so its lights follow VIA edits after a reflash.
+            uint16_t kc = keymap_key_to_keycode(layer, (keypos_t){ .col = col, .row = row });
             if (kc == KC_NO || kc == KC_TRANSPARENT) {
                 rgb_matrix_set_color(idx, 0, 0, 0); // unmapped key: off
                 continue;
