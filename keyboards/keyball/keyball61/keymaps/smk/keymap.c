@@ -1150,7 +1150,19 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 // Set Pimoroni trackball RGB based on layer and mode
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode on the Settings layer (now layer 3).
-    keyball_set_scroll_mode(top_layer(state) == 3);
+    // Auto scroll mode on the Settings layer (3). Only touch it when entering
+    // or leaving Settings: the auto-mouse layer flips on every trackball move,
+    // and forcing scroll mode on each layer change cancelled a held SCRL_MO.
+    static uint8_t prev_top = 0;
+    uint8_t        top      = top_layer(state);
+    if (top != prev_top) {
+        if (top == 3) {
+            keyball_set_scroll_mode(true);
+        } else if (prev_top == 3) {
+            keyball_set_scroll_mode(false);
+        }
+        prev_top = top;
+    }
     // No Pimoroni LED write here: housekeeping applies it when the (non-mouse)
     // layer actually changes, keeping I2C out of the layer-change path.
     return state;
